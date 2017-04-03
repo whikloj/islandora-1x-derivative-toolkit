@@ -1,0 +1,174 @@
+{
+  "object_info":{
+    "pid":"islandora:11",
+    "label":"New Test",
+    "owner":"admin",
+    "models":[
+      "islandora:sp_large_image_cmodel",
+      "fedora-system:FedoraObject-3.0"
+    ],
+    "state":"A",
+    "created":"2017-03-28T20:18:43.358Z",
+    "modified":"2017-04-03T15:07:30.958Z",
+    "datastreams":[
+      {
+        "dsid":"RELS-EXT",
+        "label":"Fedora Object to Object Relationship Metadata.",
+        "state":"A",
+        "size":573,
+        "mimeType":"application\/rdf+xml",
+        "controlGroup":"X",
+        "created":"2017-03-28T20:18:43.358Z",
+        "versionable":true,
+        "checksum":"8a4a997077b4b9d7a06fb4f6170f0693a4a4d240",
+        "checksumType":"SHA-1",
+        "versions":[
+
+        ]
+      },
+      {
+        "dsid":"MODS",
+        "label":"MODS Record",
+        "state":"A",
+        "size":1258,
+        "mimeType":"application\/xml",
+        "controlGroup":"M",
+        "created":"2017-03-28T20:18:43.358Z",
+        "versionable":true,
+        "checksum":"8109a2ac23d3bb2ad6f2102f7ae0d749d36f634a",
+        "checksumType":"SHA-1",
+        "versions":[
+
+        ]
+      },
+      {
+        "dsid":"DC",
+        "label":"DC Record",
+        "state":"A",
+        "size":451,
+        "mimeType":"text\/xml",
+        "controlGroup":"X",
+        "created":"2017-03-28T20:18:43.358Z",
+        "versionable":true,
+        "checksum":"249eaf83b6e922a3fb7dd271d195295778ebb9e6",
+        "checksumType":"SHA-1",
+        "versions":[
+
+        ]
+      },
+      {
+        "dsid":"OBJ",
+        "label":"UM_pc133_A92-030_001_0004_018_0001.tif",
+        "state":"A",
+        "size":166849700,
+        "mimeType":"image\/tiff",
+        "controlGroup":"M",
+        "created":"2017-03-28T20:18:43.358Z",
+        "versionable":true,
+        "checksum":"0fb5d7e383861b55804c2f6dee526d13b9cb478b",
+        "checksumType":"SHA-1",
+        "versions":[
+
+        ]
+      },
+      {
+        "dsid":"TECHMD",
+        "label":"TECHMD",
+        "state":"A",
+        "size":8614,
+        "mimeType":"application\/xml",
+        "controlGroup":"M",
+        "created":"2017-03-28T20:42:19.539Z",
+        "versionable":true,
+        "checksum":"31bc33059ea804af7399c6fcfe08a141ebbc4b4c",
+        "checksumType":"SHA-1",
+        "versions":[
+
+        ]
+      },
+      {
+        "dsid":"TN",
+        "label":"Thumbnail",
+        "state":"A",
+        "size":29903,
+        "mimeType":"image\/jpeg",
+        "controlGroup":"M",
+        "created":"2017-03-28T20:42:21.424Z",
+        "versionable":true,
+        "checksum":"81513233e7f4431ad9c352f3fb51e92d9054a3e6",
+        "checksumType":"SHA-1",
+        "versions":[
+
+        ]
+      },
+      {
+        "dsid":"JPG",
+        "label":"Medium sized JPEG",
+        "state":"A",
+        "size":67303,
+        "mimeType":"image\/jpeg",
+        "controlGroup":"M",
+        "created":"2017-03-28T20:42:23.476Z",
+        "versionable":true,
+        "checksum":"9cb0c9a4c6db2d765e80d44251aaed00526b4f7c",
+        "checksumType":"SHA-1",
+        "versions":[
+
+        ]
+      },
+      {
+        "dsid":"JP2",
+        "label":"JPEG 2000",
+        "state":"A",
+        "size":1740212,
+        "mimeType":"image\/jp2",
+        "controlGroup":"M",
+        "created":"2017-03-28T20:42:25.564Z",
+        "versionable":true,
+        "checksum":"47ea4ef025223c4529b15f0fe748cf6d7fc8998a",
+        "checksumType":"SHA-1",
+        "versions":[
+
+        ]
+      }
+    ]
+  },
+  "derivative_info":[
+    {
+      "source_dsid":"OBJ",
+      "destination_dsid":"TECHMD",
+      "weight":"0",
+      "function":[
+        "islandora_fits_create_techmd"
+      ],
+      "file":"sites\/all\/modules\/islandora_fits\/includes\/derivatives.inc"
+    },
+    {
+      "source_dsid":"OBJ",
+      "destination_dsid":"TN",
+      "weight":0,
+      "function":[
+        "islandora_large_image_create_tn_derivative"
+      ],
+      "file":"sites\/all\/modules\/islandora_solution_pack_large_image\/includes\/derivatives.inc"
+    },
+    {
+      "source_dsid":"OBJ",
+      "destination_dsid":"JPG",
+      "weight":1,
+      "function":[
+        "islandora_large_image_create_jpg_derivative"
+      ],
+      "file":"sites\/all\/modules\/islandora_solution_pack_large_image\/includes\/derivatives.inc"
+    },
+    {
+      "source_dsid":"OBJ",
+      "destination_dsid":"JP2",
+      "weight":2,
+      "function":[
+        "islandora_large_image_create_jp2_derivative"
+      ],
+      "file":"sites\/all\/modules\/islandora_solution_pack_large_image\/includes\/derivatives.inc"
+    }
+  ]
+}

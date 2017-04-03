@@ -1,0 +1,11 @@
+{
+	"expires": "0",
+	"methodName": "modifyDatastreamByValue",
+	"timestamp": "1489441379994",
+	"destination": "/queue/fedora.apim.update",
+	"pid": "islandora:123",
+	"persistent": "true",
+	"priority": "4",
+	"message-id": "ID:localhost-36004-1489440749650-3:1:2:1:38",
+	"subscription": "subscription-id"
+}

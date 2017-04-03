@@ -1,0 +1,13 @@
+description = 'Islandora Derivative Process Provisioning'
+
+processResources {
+    outputs.upToDateWhen { false  }
+    expand project.properties
+}
+
+artifacts {
+    archives (file('build/resources/main/features.xml')) {
+        classifier 'features'
+        type 'xml'
+    }
+}

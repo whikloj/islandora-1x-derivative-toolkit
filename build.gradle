@@ -1,0 +1,86 @@
+allprojects  {
+    apply plugin: 'maven'
+    apply plugin: 'jacoco'
+    apply plugin: 'eclipse-wtp'
+
+    group = 'ca.umanitoba.dam.islandora.derivatives'
+
+    repositories {
+        mavenCentral()
+        mavenLocal()
+    }
+
+    gradle.projectsEvaluated {
+        tasks.withType(JavaCompile) {
+            options.compilerArgs << "-Xlint:unchecked" << "-Xlint:deprecation"
+        }
+    }
+
+}
+
+subprojects {
+		
+    apply plugin: 'java'
+
+    // Java 8 only
+    sourceCompatibility = 1.8
+    targetCompatibility = 1.8
+
+    ext {
+    	vendor = "Digital Initiatives : University of Manitoba Libraries"
+    	docURL = "https://github.com/uml-digitalinitiatives/islandora-1x-derivative-toolkit"
+    	description = "Generate derivatives offsite for Islandora 1.x site."
+    	license = "MIT"
+    	versions = [
+    		camel : '2.18.1',
+    		camelRange : '[2.18, 3)',
+    		activemq : '5.14.0',
+    		slf4j : '1.7.18',
+    		osgi : '1.5.0',
+    		jackson : '2.8.7',
+    		apacheCommons : '2.4',
+    		apacheHttp : '4.4.+',
+    		logback : '1.+',
+    		mockito : '1.10.+',
+    		asmCommons : '5.0.3'
+    	]
+	
+	    defaultOsgiImports = 'org.osgi.service.blueprint;version="[1,2)",*'
+    }
+
+
+
+    // Copy configuration files over to output
+    task processConfig(type: Copy) {
+    	from('src/main/cfg') {
+    		include '**/*.cfg'
+    	}
+    	into 'build/cfg/main'
+    }
+
+    // Make a sources jar (if you want it)
+    task sourceJar(type: Jar) {
+    	classifier 'sources'
+    	from sourceSets.main.allSource
+    }
+
+    task javadocJar(type: Jar) {
+        classifier 'javadoc'
+        from javadoc
+    }
+
+    artifacts {
+        archives javadocJar 
+        archives sourceJar
+    }
+
+    classes {
+        classes.dependsOn processConfig
+    }
+}
+
+task docs(type: Javadoc) {
+  source subprojects.collect {project -> project.sourceSets.main.allJava }
+  classpath = files(subprojects.collect {project -> project.sourceSets.main.compileClasspath})
+  destinationDir = new File(projectDir, "docs/${version}")
+}
