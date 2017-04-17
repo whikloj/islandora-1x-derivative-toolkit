@@ -31,6 +31,7 @@ subprojects {
     	docURL = "https://github.com/uml-digitalinitiatives/islandora-1x-derivative-toolkit"
     	description = "Generate derivatives offsite for Islandora 1.x site."
     	license = "MIT"
+    	buildName = "islandora-1x-derivative-toolkit"
     	versions = [
     		camel : '2.18.1',
     		camelRange : '[2.18, 3)',

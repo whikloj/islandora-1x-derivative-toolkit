@@ -1,126 +1,107 @@
 package ca.umanitoba.dam.islandora.derivatives.gatekeeper;
 
+import static org.apache.camel.Exchange.CONTENT_TYPE;
 import static org.apache.camel.LoggingLevel.DEBUG;
-import static org.apache.camel.LoggingLevel.ERROR;
 import static org.slf4j.LoggerFactory.getLogger;
 
 import java.util.Arrays;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.stream.Collectors;
 
-import org.apache.camel.Exchange;
+import org.apache.camel.BeanInject;
 import org.apache.camel.PropertyInject;
 import org.apache.camel.builder.RouteBuilder;
-import org.apache.camel.model.language.ExpressionDefinition;
 import org.slf4j.Logger;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.jayway.jsonpath.JsonPath;
 import com.jayway.jsonpath.ReadContext;
 
-import ca.umanitoba.dam.islandora.derivatives.gatekeeper.retriever.ObjectInformationRetriever;
+import ca.umanitoba.dam.islandora.derivatives.gatekeeper.retriever.ObjectInformationInterface;
 
 public class ImageRoutes extends RouteBuilder {
 
     // Logger
     private static final Logger LOGGER = getLogger(ImageRoutes.class);
 
+    @BeanInject("ObjectInfo")
+    ObjectInformationInterface objBean;
+
+    @PropertyInject("gatekeeper.process_contentTypes")
+    protected String process_contentTypes;
+
+    @PropertyInject("gatekeeper.process_dsids")
+    protected String process_dsid;
+
+    @PropertyInject("output.queue")
+    protected String outputqueue;
+
+    private ObjectMapper mapper = new ObjectMapper();
+
     @Override
     public void configure() throws Exception {
 
+        LOGGER.warn("output queue is ({})", outputqueue);
 
-        // Error/Redelivery handler
-		onException(Exception.class)
-				.maximumRedeliveries("{{error.maxRedeliveries}}")
-				.handled(true)
-				.log(
-						ERROR,
-						LOGGER,
-						"Error with message ${property.message}: ${exception.message}\n\n${exception.stacktrace}");
+
 
 		/**
 		 * Input queue and main route.
 		 */
 		from("{{input.queue}}")
                 .routeId("UmlDerivativeMainRouter")
+            .startupOrder(15)
                 .filter(new ValidHeaderPredicate())
                 .to("direct:getObjectInfo")
-                .to("direct:filterByContentType")
-                .to("direct:filterByDsid")
-                .to("{{output.queue}}");
+            .setProperty("dsids", simple("{{gatekeeper.process_dsids}}"))
+            .setProperty("types", simple("{{gatekeeper.process_contentTypes}}"))
+            .filter(new IslandoraInfoFilter()).to("direct:formatOutput");
 
 		/**
 		 * Get the resource's information from Islandora.
 		 */
 		from("direct:getObjectInfo")
 		    .routeId("UmlDerivativeGetInfo")
-            .log(DEBUG, "in direct:getObjectInfo")
-		    .bean(ObjectInformationRetriever.class, "getInfo")
-		    .setProperty("objectJson", bodyAs(String.class));
+            .startupOrder(10)
+            .log(DEBUG, LOGGER, "in direct:getObjectInfo")
+            .bean(objBean, "getInfo");
+
+        /**
+         * Take the message (which should be object information) and form a small json message for output.
+         */
+        from("direct:formatOutput").routeId("UmlDerivativeFormatOutput").process(exchange -> {
+                // Transform to a new smaller message for our workers.
+                String dsids = exchange.getProperty("dsids", String.class);
+                Set<String> process_dsids = new HashSet<String>(Arrays.asList(dsids.split(",")));
+                String json = exchange.getIn().getBody(String.class);
+                ReadContext ctx = JsonPath.parse(json);
+
+                String pid = ctx.read("$.object_info.pid");
+                List<Map<String, Object>> derivative_map = ctx.read("$.derivative_info[*]");
+
+                derivative_map.stream().filter(t -> process_dsids.contains(t.keySet())).forEach(t -> {
+                    t.remove("weight");
+                    t.remove("function");
+                    t.remove("file");
+                });
+
+                String map = mapper.writeValueAsString(derivative_map);
+                LOGGER.debug("map is ({})", map);
+                String outputJson = String.format("{ \"pid\": \"%s\", \"derivatives\" : [ %s ]}", pid, map);
+            exchange.getIn().setBody(outputJson);
+            exchange.getIn().setHeader(CONTENT_TYPE, "application/json");
+        }).to("{{output.queue}}");
 
 		/**
 		 * Compare the destination dsids from Islandora to the configuration set.
 		 * Filter out those that don't have the derivatives we want to process.
 		 */
-        from("direct:filterByDsid").routeId("UmlDerivativeFilterByDSID")
-            .log(DEBUG, "in direct:filterByDsid")
-                .log(DEBUG, "Message is ${body}")
-                .filter(new ExpressionDefinition() {
+        // from("direct:filterBy").routeId("UmlDerivativeFilter")
+        // .startupOrder(1)
+        // .log(DEBUG, "in direct:filterByDsid")
 
-                    @PropertyInject(value = "islandora.process_dsids")
-                    protected String process_dsid;
-
-                    @Override
-                    public boolean matches(Exchange exchange) {
-
-                    String json = (String) exchange.getProperty("objectJson");
-                        ReadContext ctx = JsonPath.parse(json);
-                        Set<String> receivedDSIDs = ctx.read("$.derivative_info[].destination_dsid");
-                        @SuppressWarnings("serial")
-                    Set<String> validDSIDs = new HashSet<String>() {
-
-                        {
-                            Arrays.asList(process_dsid.split(","));
-                        }
-                    };
-                        validDSIDs.retainAll(receivedDSIDs);
-                        if (validDSIDs.size() > 0) {
-                            Map<String, Object> headers = exchange.getOut().getHeaders();
-                            headers.remove("X-Islandora-Process-Dsids");
-                            headers.put("X-Islandora-Process-Dsids", validDSIDs
-                                    .stream().collect(Collectors.joining(",")));
-                        }
-                        return (validDSIDs.size() == 0);
-                    }
-
-            }).setBody(exchangeProperty("objectJson"));
-
-        /**
-         * Compare the content-models from Islandora to the configuration set.
-         * Filter out those that don't have the content-models we want to process.
-         */
-        from("direct:filterByContentType")
-                .routeId("UmlDerivativeFilterByContentType")
-            .log(DEBUG, "in direct:filterByContentType")
-                .log(DEBUG, "Message is ${body}")
-                .filter(new ExpressionDefinition() {
-
-                    @PropertyInject(value = "islandora.process_contentTypes")
-                    protected String process_contentTypes;
-
-                    @Override
-                    public boolean matches(Exchange exchange) {
-
-                    String json = (String) exchange.getProperty("objectJson");
-                    ReadContext ctx = JsonPath.parse(json);
-                    Set<String> objectTypes = ctx.read("$.object_info.models");
-                        Set<String> validTypes = new HashSet<String>(
-                                Arrays.asList(process_contentTypes.split(",")));
-                        validTypes.retainAll(objectTypes);
-                        return (validTypes.size() == 0);
-                    }
-                });
     }
 
 

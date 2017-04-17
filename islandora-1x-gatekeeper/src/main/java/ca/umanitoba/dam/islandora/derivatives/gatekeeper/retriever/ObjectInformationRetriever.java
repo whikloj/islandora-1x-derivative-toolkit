@@ -55,19 +55,19 @@ public class ObjectInformationRetriever
      * Islandora endpoint for providing JSON information about objects.
      */
     @PropertyInject(value = "islandora.rest.infoUri")
-    private static final String OBJECT_INFORMATION_URI = "rest/v1/object/%/full_info";
+    protected final String OBJECT_INFORMATION_URI = "rest/v1/object/%/full_info";
 
     /**
      * Remote username from properties
      */
     @PropertyInject(value = "islandora.username")
-    protected static String USERNAME;
+    protected final String USERNAME = "islandora";
 
     /**
      * Remote password from properties
      */
     @PropertyInject(value = "islandora.password")
-    protected static String PASSWORD;
+    protected final String PASSWORD = "islandora";
 
     /**
      * remote hostname string from properties

@@ -11,5 +11,9 @@
 
 rootProject.name = 'islandora-1x-derivative-toolkit'
 include ':islandora-1x-gatekeeper'
+include ':islandora-1x-derivative-worker'
+include ':islandora-1x-derivative-karaf'
 
 project(':islandora-1x-gatekeeper').projectDir = "$rootDir/islandora-1x-gatekeeper" as File
+project(':islandora-1x-derivative-worker').projectDir = "$rootDir/islandora-1x-derivative-worker" as File
+project(':islandora-1x-derivative-karaf').projectDir = "$rootDir/islandora-1x-derivative-karaf" as File

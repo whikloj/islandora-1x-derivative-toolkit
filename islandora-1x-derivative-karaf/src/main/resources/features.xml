@@ -1,0 +1,30 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<features xmlns="http://karaf.apache.org/xmlns/features/v1.3.0" name="${buildName}-${project.version}">
+
+  <repository>mvn:org.apache.camel.karaf/apache-camel/${versions.camel}/xml/features</repository>
+
+ <feature name="islandora-1x-gatekeeper" version="${project.version}" start-level="80">
+    <details>Determines whether to pass along Islandora Objects based on content-type and datastream IDs</details>
+
+    <feature version="${versions.camelRange}">camel-blueprint</feature>
+    <feature version="${versions.camelRange}">camel-jsonpath</feature>
+
+    <bundle>mvn:ca.umanitoba.dam.islandora.derivatives.gatekeeper/islandora-1x-gatekeeper/${project.version}</bundle>
+
+    <configfile finalname="/etc/ca.umanitoba.dam.islandora.derivatives.gatekeeper.cfg">mvn:ca.umanitoba.dam.islandora.derivatives.gatekeeper/islandora-1x-gatekeeper/${project.version}/cfg/configuration</configfile>
+
+  </feature>
+  
+  <feature name="islandora-1x-derivative-worker" version="${project.version}" start-level="80">
+  	<details>Handles messages from Gatekeeper, currently only processes HOCR/OCR requests with Tesseract.</details>
+  	<feature version="${versions.camelRange}">camel-blueprint</feature>
+  	<feature version="${versions.camelRange}">camel-jsonpath</feature>
+  	<feature version="${versions.camelRange}">camel-http4</feature>
+  	<feature version="${versions.camelRange}">camel-exec</feature>
+  	
+  	<bundle>mvn:ca.umanitoba.dam.islandora.derivatives.worker/islandora-1x-derivative-worker/${project.version}</bundle>
+  	
+  	<configfile finalname="/etc/ca.umanitoba.dam.islandora.derivatives.worker.cfg">mvn:ca.umanitoba.dam.islandora.derivatives.worker/islandora-1x-derivative-worker/${project.version}/cfg/configuration</configfile>
+  </feature>
+
+</features>

@@ -6,7 +6,7 @@ apply plugin: 'osgi'
 ext {
 	buildName = "islandora-derivatives-gatekeeper"
 	description = "Filter objects not needed to process"
-    group = 'ca.umanitoba.dam.islandora.derivatives.gatekeeper'
+    buildGroup = 'ca.umanitoba.dam.islandora.derivatives.gatekeeper'
 }
 
 // In this section you declare the dependencies for your production and test code
@@ -24,10 +24,12 @@ dependencies {
 	testCompile group: 'org.mockito', name: 'mockito-all', version: versions.mockito
 	testCompile group: 'org.apache.httpcomponents', name: 'httpclient', version: versions.apacheHttp, classifier: 'tests'
 	testCompile group: 'org.ow2.asm', name: 'asm-commons', version: versions.asmCommons
+	testCompile group: 'org.apache.aries.blueprint', name: 'org.apache.aries.blueprint', version: '1.1.0'
+	
 }
 
 artifacts {
-    archives (file('build/cfg/main/ca.umanitoba.dam.derivatives.gatekeeper.cfg')) {
+    archives (file('build/cfg/main/ca.umanitoba.dam.islandora.derivatives.gatekeeper.cfg')) {
         classifier 'configuration'
         type 'cfg'
     }
@@ -41,7 +43,8 @@ jar {
       docURL project.docURL
       license project.license
 
-      instruction 'Import-Package', "org.apache.camel;version=\"${versions.camelRange}\"," +
+      instruction 'Import-Package', "org.apache.httpcomponents.httpclient;version=\"${versions.apacheHttp}\"," + 
+      						"org.apache.camel;version=\"${versions.camelRange}\"," +
                             defaultOsgiImports
       instruction 'Export-Package', 'ca.umanitoba.dam.islandora.derivatives.gatekeeper'
     }
@@ -63,7 +66,7 @@ test {
         // Make sure output from
         // standard out or error is shown
         // in Gradle output.
-       showStandardStreams = true
+        // showStandardStreams = true
         events 'standard_out'
         exceptionFormat = 'full'
     }

@@ -1,0 +1,67 @@
+apply plugin: 'osgi'
+
+ext {
+    buildName = "islandora-derivatives-worker"
+    description = "Process derivatives off the queue"
+    buildGroup = 'ca.umanitoba.dam.islandora.derivatives.worker'
+}
+
+// In this section you declare the dependencies for your production and test code
+dependencies {
+    compile group: 'org.apache.camel', name: 'camel-core', version: versions.camel
+    compile group: 'org.apache.camel', name: 'camel-blueprint', version: versions.camel
+    compile group: 'org.apache.camel', name: 'camel-jsonpath', version: versions.camel
+    compile group: 'org.apache.camel', name: 'camel-http4', version: versions.camel
+    compile group: 'org.apache.camel', name: 'camel-exec', version: versions.camel
+    compile group: 'com.fasterxml.jackson.core', name: 'jackson-databind', version: versions.jackson
+    compile group: 'org.slf4j', name: 'slf4j-api', version: versions.slf4j
+    
+    testCompile group: 'org.apache.camel', name: 'camel-test-blueprint', version: versions.camel
+    testCompile group: 'org.slf4j', name: 'slf4j-log4j12', version: versions.slf4j
+    testCompile group: 'org.ow2.asm', name: 'asm-commons', version: versions.asmCommons
+}
+
+artifacts {
+    archives (file('build/cfg/main/ca.umanitoba.dam.islandora.derivatives.worker.cfg')) {
+        classifier 'configuration'
+        type 'cfg'
+    }
+}
+
+// Make our JAR file
+jar {
+    manifest {
+      description project.description
+      vendor project.vendor
+      docURL project.docURL
+      license project.license
+
+      instruction 'Import-Package', "org.apache.camel.component.http4," +
+      						"org.apache.camel.component.exec," +
+                            "org.apache.camel;version=\"${versions.camelRange}\"," + 
+                            defaultOsgiImports
+      instruction 'Export-Package', 'ca.umanitoba.dam.islandora.derivatives.gatekeeper'
+    }
+}
+
+sourceSets {
+    test {
+        output.resourcesDir = "build/resources/test"
+        resources {
+            srcDir "src/test/resources"
+        }
+    }
+}
+
+test {
+    //systemProperties 'logback.configurationFile' : new File(projectDir,'src/test/resources/logback-test.xml').absolutePath
+
+    testLogging {
+        // Make sure output from
+        // standard out or error is shown
+        // in Gradle output.
+        // showStandardStreams = true
+        events 'standard_out'
+        exceptionFormat = 'full'
+    }
+}
