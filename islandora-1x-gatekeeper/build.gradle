@@ -3,10 +3,11 @@ plugins {
 }
 apply plugin: 'osgi'
 
+description = "Filter objects not needed to process"
+
 ext {
 	buildName = "islandora-derivatives-gatekeeper"
-	description = "Filter objects not needed to process"
-    buildGroup = 'ca.umanitoba.dam.islandora.derivatives.gatekeeper'
+	buildGroup = 'ca.umanitoba.dam.islandora.derivatives.gatekeeper'
 }
 
 // In this section you declare the dependencies for your production and test code
@@ -15,7 +16,7 @@ dependencies {
 	compile group: 'org.apache.camel', name: 'camel-blueprint', version: versions.camel
     compile group: 'org.apache.camel', name: 'camel-jsonpath', version: versions.camel
 	compile group: 'org.slf4j', name: 'slf4j-api', version: versions.slf4j
-	compile group: 'org.apache.httpcomponents', name: 'httpclient', version: versions.apacheHttp
+	compile group: 'org.apache.httpcomponents', name: 'httpclient-osgi', version: versions.httpclient
 	compile group: 'com.fasterxml.jackson.core', name: 'jackson-databind', version: versions.jackson
 	compile group: 'commons-io', name: 'commons-io', version: versions.apacheCommons
 	
@@ -43,9 +44,9 @@ jar {
       docURL project.docURL
       license project.license
 
-      instruction 'Import-Package', "org.apache.httpcomponents.httpclient;version=\"${versions.apacheHttp}\"," + 
-      						"org.apache.camel;version=\"${versions.camelRange}\"," +
-                            defaultOsgiImports
+      instruction 'Import-Package', "org.apache.activemq.camel.component;version=\"${versions.activemqRange}\","
+      			"org.apache.camel;version=\"${versions.camelRange}\"," +
+                defaultOsgiImports
       instruction 'Export-Package', 'ca.umanitoba.dam.islandora.derivatives.gatekeeper'
     }
 }
@@ -70,12 +71,4 @@ test {
         events 'standard_out'
         exceptionFormat = 'full'
     }
-}
-
-camelRun {
-	trace = true
-	duration = '60s'
-	blueprint {
-		
-	} 
 }

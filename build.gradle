@@ -35,12 +35,16 @@ subprojects {
     	versions = [
     		camel : '2.18.1',
     		camelRange : '[2.18, 3)',
-    		activemq : '5.14.0',
+    		activemq : '5.14.1',
+    		activemqRange : '[5.14,6)',
     		slf4j : '1.7.18',
     		osgi : '1.5.0',
     		jackson : '2.8.7',
     		apacheCommons : '2.4',
-    		apacheHttp : '4.4.+',
+    		httpclient : '4.5.2',
+    		httpclientRange : '[4.5, 5)',
+    		httpcore : '4.4.3',
+    		httpcoreRange : '[4.4, 5)',
     		logback : '1.+',
     		mockito : '1.10.+',
     		asmCommons : '5.0.3'

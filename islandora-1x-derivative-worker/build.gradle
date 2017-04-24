@@ -1,9 +1,9 @@
 apply plugin: 'osgi'
 
+description = "Process derivatives off the queue"
+
 ext {
-    buildName = "islandora-derivatives-worker"
-    description = "Process derivatives off the queue"
-    buildGroup = 'ca.umanitoba.dam.islandora.derivatives.worker'
+	buildName = "islandora-derivatives-worker"
 }
 
 // In this section you declare the dependencies for your production and test code
@@ -40,7 +40,7 @@ jar {
       						"org.apache.camel.component.exec," +
                             "org.apache.camel;version=\"${versions.camelRange}\"," + 
                             defaultOsgiImports
-      instruction 'Export-Package', 'ca.umanitoba.dam.islandora.derivatives.gatekeeper'
+      instruction 'Export-Package', 'ca.umanitoba.dam.islandora.derivatives.worker'
     }
 }
 
