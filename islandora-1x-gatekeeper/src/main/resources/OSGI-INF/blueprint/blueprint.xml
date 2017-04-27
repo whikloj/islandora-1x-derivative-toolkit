@@ -24,7 +24,7 @@
   </cm:property-placeholder>
   
   <bean id="jmsConnectionFactory" class="org.apache.activemq.ActiveMQConnectionFactory">
-    <property name="brokerURL" value="{{jms.brokerUrl}}"/>
+    <property name="brokerURL" value="${jms.brokerUrl}"/>
   </bean>
 
   <bean id="pooledConnectionFactory"
