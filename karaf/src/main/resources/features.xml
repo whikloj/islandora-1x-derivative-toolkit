@@ -7,6 +7,8 @@
  <feature name="islandora-1x-gatekeeper" version="${project.version}" start-level="80">
     <details>Determines whether to pass along Islandora Objects based on content-type and datastream IDs</details>
 
+    <feature version="${versions.camelRange}">camel</feature>
+    <feature version="${versions.camelRange}">camel-spring</feature>
     <feature version="${versions.camelRange}">camel-blueprint</feature>
     <feature version="${versions.camelRange}">camel-jsonpath</feature>
     <feature version="${versions.activemqRange}">activemq-camel</feature>

@@ -126,7 +126,6 @@ public class ObjectInformationRetriever
      * @param hostname the hostname to set
      */
     public void setHostname(String hostname) {
-        LOGGER.debug("Setting hostname to {}", hostname);
         HOSTNAME = hostname;
         parseHostName();
     }
@@ -282,7 +281,7 @@ public class ObjectInformationRetriever
             } else {
                 ISLANDORA_HOST = new URI(HOSTNAME + BASE_PATH);
             }
-            LOGGER.debug("Set ISLANDORA_HOST to ({})",
+            LOGGER.debug("Setting ISLANDORA_HOST to ({})",
                     ISLANDORA_HOST.toString());
 
         } catch (URISyntaxException e) {

@@ -2,6 +2,7 @@ package ca.umanitoba.dam.islandora.derivatives.gatekeeper;
 
 import static org.apache.camel.Exchange.CONTENT_TYPE;
 import static org.apache.camel.LoggingLevel.DEBUG;
+import static org.apache.camel.LoggingLevel.TRACE;
 import static org.slf4j.LoggerFactory.getLogger;
 
 import java.util.Arrays;
@@ -51,10 +52,13 @@ public class ImageRoutes extends RouteBuilder {
 		 * Input queue and main route.
 		 */
 		from("{{input.queue}}")
-                .routeId("UmlDerivativeMainRouter")
+            .routeId("UmlDerivativeMainRouter")
+            .log(DEBUG, LOGGER, "Received message on input queue for ${headers[pid]}")
             .startupOrder(15)
-                .filter(new ValidHeaderPredicate())
-                .to("direct:getObjectInfo")
+            .filter(new ValidHeaderPredicate())
+            .log(TRACE, LOGGER, "Has valid headers")
+            .to("direct:getObjectInfo")
+            .log(TRACE, LOGGER, "Got information")
             .setProperty("dsids", simple("{{gatekeeper.process_dsids}}"))
             .setProperty("types", simple("{{gatekeeper.process_contentTypes}}"))
             .filter(new IslandoraInfoFilter()).to("direct:formatOutput");
@@ -71,7 +75,9 @@ public class ImageRoutes extends RouteBuilder {
         /**
          * Take the message (which should be object information) and form a small json message for output.
          */
-        from("direct:formatOutput").routeId("UmlDerivativeFormatOutput").process(exchange -> {
+        from("direct:formatOutput").routeId("UmlDerivativeFormatOutput")
+            .log(DEBUG, LOGGER, "Formatting output message")
+            .process(exchange -> {
                 // Transform to a new smaller message for our workers.
                 String dsids = exchange.getProperty("dsids", String.class);
                 Set<String> process_dsids = new HashSet<String>(Arrays.asList(dsids.split(",")));

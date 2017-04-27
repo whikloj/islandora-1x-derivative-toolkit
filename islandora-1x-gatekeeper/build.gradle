@@ -14,11 +14,14 @@ ext {
 dependencies {
 	compile group: 'org.apache.camel', name: 'camel-core', version: versions.camel
 	compile group: 'org.apache.camel', name: 'camel-blueprint', version: versions.camel
-    compile group: 'org.apache.camel', name: 'camel-jsonpath', version: versions.camel
+	compile group: 'org.apache.camel', name: 'camel-jsonpath', version: versions.camel
+	compile group: 'org.apache.camel', name: 'camel-jms', version: versions.camel
+	compile group: 'org.apache.activemq', name: 'activemq-pool', version: versions.activemq
 	compile group: 'org.slf4j', name: 'slf4j-api', version: versions.slf4j
 	compile group: 'org.apache.httpcomponents', name: 'httpclient-osgi', version: versions.httpclient
 	compile group: 'com.fasterxml.jackson.core', name: 'jackson-databind', version: versions.jackson
 	compile group: 'commons-io', name: 'commons-io', version: versions.apacheCommons
+
 	
 	testCompile group: 'org.apache.camel', name: 'camel-test-blueprint', version: versions.camel
   	testCompile group: 'org.slf4j', name: 'slf4j-log4j12', version: versions.slf4j
@@ -44,7 +47,10 @@ jar {
       docURL project.docURL
       license project.license
 
-      instruction 'Import-Package', "org.apache.activemq.camel.component;version=\"${versions.activemqRange}\","
+      instruction 'Import-Package', "org.apache.activemq," +
+                "org.apache.activemq.pool," +
+      			"org.apache.activemq.camel.component;version=\"${versions.activemqRange}\","
+      			"org.apache.camel.component.jms," +
       			"org.apache.camel;version=\"${versions.camelRange}\"," +
                 defaultOsgiImports
       instruction 'Export-Package', 'ca.umanitoba.dam.islandora.derivatives.gatekeeper'

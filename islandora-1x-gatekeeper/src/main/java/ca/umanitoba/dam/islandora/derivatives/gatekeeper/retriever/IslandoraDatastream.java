@@ -90,9 +90,6 @@ public class IslandoraDatastream {
 
         @JsonCreator
         public static checksumTypes fromString(String string) {
-            LOGGER.debug("string is ({}) and is null ({})", string,
-                    (string == null ? "yes" : "no"));
-
             checksumTypes type = FORMAT_MAP.get(string);
 
             if (type == null) {
