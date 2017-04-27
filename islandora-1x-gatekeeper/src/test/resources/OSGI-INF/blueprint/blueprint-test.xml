@@ -17,7 +17,7 @@
       <cm:property name="islandora.rest.infoUri" value="rest/v1/object/%/full_info"/>
       <cm:property name="islandora.username" value="islandora"/>
       <cm:property name="islandora.password" value="islandora"/>
-      <cm:property name="islandora.hostname" value="http://localhost:80/"/>
+      <cm:property name="islandora.hostname" value="http://127.0.0.1:80/"/>
       <cm:property name="islandora.basePath" value="islandora/"/>
     </cm:default-properties>
   </cm:property-placeholder>
