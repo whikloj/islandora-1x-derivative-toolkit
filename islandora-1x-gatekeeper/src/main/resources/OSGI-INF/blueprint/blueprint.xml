@@ -15,11 +15,12 @@
       <cm:property name="output.queue" value="activemq:queue:derivatives"/>
       <cm:property name="gatekeeper.process_dsids" value=""/>
       <cm:property name="gatekeeper.process_contentTypes" value=""/>
-      <cm:property name="islandora.rest.infoUri" value="rest/v1/object/%/full_info"/>
+      <cm:property name="islandora.rest.infoUri" value="/rest/v1/object/%PID%/full_info"/>
       <cm:property name="islandora.username" value=""/>
       <cm:property name="islandora.password" value=""/>
-      <cm:property name="islandora.hostname" value="http://127.0.0.1:80/"/>
-      <cm:property name="islandora.basePath" value="islandora/"/>
+      <cm:property name="islandora.hostname" value="http://127.0.0.1:80"/>
+      <cm:property name="islandora.basepath" value="/islandora"/>
+      <cm:property name="islandora.login.service" value="/umldam"/>
     </cm:default-properties>
   </cm:property-placeholder>
   
@@ -27,7 +28,7 @@
     <property name="brokerURL" value="${jms.brokerUrl}"/>
   </bean>
 
-  <!--<bean id="pooledConnectionFactory"
+  <bean id="pooledConnectionFactory"
      class="org.apache.activemq.pool.PooledConnectionFactory" init-method="start" destroy-method="stop">
     <property name="maxConnections" value="8" />
     <property name="connectionFactory" ref="jmsConnectionFactory" />
@@ -36,18 +37,17 @@
   <bean id="jmsConfig" class="org.apache.camel.component.jms.JmsConfiguration">
     <property name="connectionFactory" ref="pooledConnectionFactory"/>
     <property name="concurrentConsumers" value="5"/>
-  </bean>-->
-
-  <bean id="activemq" class="org.apache.activemq.camel.component.ActiveMQComponent">
-    <!--  <property name="configuration" ref="jmsConfig"/> -->
-    <property name="connectionFactory" ref="jmsConnectionFactory"/>
   </bean>
 
-  <bean id="http" class="org.apache.camel.component.http4.HttpComponent"/>
-  <bean id="https" class="org.apache.camel.component.http4.HttpComponent"/>
+  <bean id="activemq" class="org.apache.activemq.camel.component.ActiveMQComponent">
+    <property name="configuration" ref="jmsConfig"/>
+    <!-- <property name="connectionFactory" ref="jmsConnectionFactory"/> -->
+  </bean>
   
-  <bean id="ObjectInfo" class="ca.umanitoba.dam.islandora.derivatives.gatekeeper.retriever.ObjectInformationRetriever" />
-
+  <bean id="staticStore" class="ca.umanitoba.dam.islandora.derivatives.gatekeeper.StaticMap"/>
+  <bean id="validInbound" class="ca.umanitoba.dam.islandora.derivatives.gatekeeper.ValidHeaderPredicate"/>
+  <bean id="infoFilter" class="ca.umanitoba.dam.islandora.derivatives.gatekeeper.IslandoraInfoFilter"/>
+  
   <camelContext id="UmlDerivativeGatekeeper" xmlns="http://camel.apache.org/schema/blueprint">
     <package>ca.umanitoba.dam.islandora.derivatives.gatekeeper</package>
   </camelContext>

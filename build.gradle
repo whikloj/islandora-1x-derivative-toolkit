@@ -41,12 +41,14 @@ subprojects {
     		osgi : '1.5.0',
     		jackson : '2.8.7',
     		apacheCommons : '2.4',
+    		commonsCodec : '1.10',
     		httpclient : '4.5.2',
     		httpclientRange : '[4.5, 5)',
     		httpcore : '4.4.3',
     		httpcoreRange : '[4.4, 5)',
+    		springFramework : '3.1.4.RELEASE',
     		logback : '1.+',
-    		mockito : '1.10.+',
+    		mockito : '1.10.19',
     		asmCommons : '5.0.3'
     	]
 	

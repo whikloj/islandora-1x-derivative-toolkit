@@ -15,11 +15,14 @@ dependencies {
 	compile group: 'org.apache.camel', name: 'camel-core', version: versions.camel
 	compile group: 'org.apache.camel', name: 'camel-blueprint', version: versions.camel
 	compile group: 'org.apache.camel', name: 'camel-jsonpath', version: versions.camel
+	compile group: 'org.apache.camel', name: 'camel-http4', version: versions.camel
+	compile group: 'org.apache.camel', name: 'camel-http-common', version: versions.camel
 	compile group: 'org.slf4j', name: 'slf4j-api', version: versions.slf4j
 	compile group: 'org.apache.httpcomponents', name: 'httpclient-osgi', version: versions.httpclient
+	compile group: 'org.apache.httpcomponents', name: 'httpcore-osgi', version: versions.httpcore
 	compile group: 'com.fasterxml.jackson.core', name: 'jackson-databind', version: versions.jackson
 	compile group: 'commons-io', name: 'commons-io', version: versions.apacheCommons
-	
+
 	testCompile group: 'org.apache.camel', name: 'camel-test-blueprint', version: versions.camel
   	testCompile group: 'org.slf4j', name: 'slf4j-log4j12', version: versions.slf4j
 	testCompile group: 'org.mockito', name: 'mockito-all', version: versions.mockito
@@ -49,6 +52,7 @@ jar {
       			"org.apache.activemq.camel.component;version=\"${versions.activemqRange}\"," +
       			"org.apache.commons.io," +
       			"org.apache.camel.component.http4," +
+      			"org.apache.camel.http.common," +
       			"org.apache.camel.component.jms," +
       			"org.apache.camel;version=\"${versions.camelRange}\"," +
                 defaultOsgiImports
@@ -68,12 +72,12 @@ sourceSets {
 test {
 	//systemProperties 'logback.configurationFile' : new File(projectDir,'src/test/resources/logback-test.xml').absolutePath
 
-    testLogging {
+    //testLogging {
         // Make sure output from
         // standard out or error is shown
         // in Gradle output.
         // showStandardStreams = true
-        events 'standard_out'
-        exceptionFormat = 'full'
-    }
+   //     events 'standard_out'
+   //     exceptionFormat = 'full'
+   // }
 }

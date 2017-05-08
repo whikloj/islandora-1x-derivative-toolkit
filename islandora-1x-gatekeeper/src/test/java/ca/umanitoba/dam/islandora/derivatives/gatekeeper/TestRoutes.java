@@ -3,10 +3,16 @@ package ca.umanitoba.dam.islandora.derivatives.gatekeeper;
 import static org.apache.camel.util.ObjectHelper.loadResourceAsStream;
 import static org.slf4j.LoggerFactory.getLogger;
 
+import java.util.ArrayList;
+import java.util.List;
+
+import javax.naming.Context;
+
 import org.apache.camel.Produce;
 import org.apache.camel.ProducerTemplate;
 import org.apache.camel.builder.AdviceWithRouteBuilder;
 import org.apache.camel.test.blueprint.CamelBlueprintTestSupport;
+import org.apache.camel.util.jndi.JndiContext;
 import org.apache.commons.io.IOUtils;
 import org.junit.Test;
 import org.slf4j.Logger;
@@ -31,6 +37,15 @@ public class TestRoutes extends CamelBlueprintTestSupport {
     @Override
     protected String getBlueprintDescriptor() {
         return "OSGI-INF/blueprint/blueprint-test.xml";
+    }
+
+    @Override
+    protected Context createJndiContext() throws Exception {
+        JndiContext context = new JndiContext();
+        context.bind("staticStore", new StaticMap());
+        context.bind("infoFilter", new IslandoraInfoFilter());
+        context.bind("validInbound", new ValidHeaderPredicate());
+        return context;
     }
 
     @Test
@@ -112,4 +127,35 @@ public class TestRoutes extends CamelBlueprintTestSupport {
         assertMockEndpointsSatisfied();
     }
 
+    // Multiple consumers error.
+    // @Test
+    public void testFormatOutput() throws Exception {
+        final String route = "UmlDerivativeFormatOutput";
+
+        context.getRouteDefinition(route).adviceWith(context, new AdviceWithRouteBuilder() {
+
+            @Override
+            public void configure() throws Exception {
+                replaceFromWith("direct:start");
+                mockEndpointsAndSkip("direct:end");
+            }
+        });
+
+        context.start();
+
+        final String bodyJson =
+            IOUtils.toString(loadResourceAsStream("rest_responses/derivative_map_altered.json"), "UTF-8");
+        final String expectedJson =
+            IOUtils.toString(loadResourceAsStream("rest_responses/derivative_map_trimmed.json"), "UTF-8");
+        final List<String> expectedList = new ArrayList<String>();
+        expectedList.add(expectedJson);
+
+        getMockEndpoint("mock:direct:end").expectedBodiesReceived(expectedList);
+
+        template.start();
+        template.sendBody(bodyJson);
+
+        assertMockEndpointsSatisfied();
+
+    }
 }

@@ -14,15 +14,18 @@
       <cm:property name="output.queue" value="direct:end"/>
       <cm:property name="gatekeeper.process_dsids" value="OCR,HOCR"/>
       <cm:property name="gatekeeper.process_contentTypes" value="islandora:sp_large_image_cmodel"/>
-      <cm:property name="islandora.rest.infoUri" value="rest/v1/object/%/full_info"/>
+      <cm:property name="islandora.rest.infoUri" value="/rest/v1/object/%PID%/full_info"/>
       <cm:property name="islandora.username" value="islandora"/>
       <cm:property name="islandora.password" value="islandora"/>
-      <cm:property name="islandora.hostname" value="http://127.0.0.1:80/"/>
-      <cm:property name="islandora.basePath" value="islandora/"/>
+      <cm:property name="islandora.hostname" value="http://127.0.0.1:80"/>
+      <cm:property name="islandora.basepath" value="/islandora"/>
+      <cm:property name="islandora.login.service" value="/umldam"/>
     </cm:default-properties>
   </cm:property-placeholder>
   
-  <bean id="ObjectInfo" class="ca.umanitoba.dam.islandora.derivatives.gatekeeper.retriever.ObjectInformationRetriever" />
+  <bean id="staticStore" class="ca.umanitoba.dam.islandora.derivatives.gatekeeper.StaticMap"/>
+  <bean id="validInbound" class="ca.umanitoba.dam.islandora.derivatives.gatekeeper.ValidHeaderPredicate"/>
+  <bean id="infoFilter" class="ca.umanitoba.dam.islandora.derivatives.gatekeeper.IslandoraInfoFilter"/>
   
   <camelContext id="TestUmlDerivativeGatekeeper" xmlns="http://camel.apache.org/schema/blueprint">
     <package>ca.umanitoba.dam.islandora.derivatives.gatekeeper</package>
