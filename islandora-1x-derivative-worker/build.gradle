@@ -36,10 +36,16 @@ jar {
       docURL project.docURL
       license project.license
 
-      instruction 'Import-Package', "org.apache.camel.component.http4," +
-      						"org.apache.camel.component.exec," +
-                            "org.apache.camel;version=\"${versions.camelRange}\"," + 
-                            defaultOsgiImports
+      instruction 'Import-Package', "org.apache.activemq," +
+                "org.apache.activemq.pool," +
+      			"org.apache.activemq.camel.component;version=\"${versions.activemqRange}\"," +
+      			"org.apache.commons.io," + 
+                "org.apache.camel.component.http4," +
+                "org.apache.camel.http.common," +
+      			"org.apache.camel.component.exec," +
+      			"org.apache.camel.component.jms," +
+                "org.apache.camel;version=\"${versions.camelRange}\"," + 
+                defaultOsgiImports
       instruction 'Export-Package', 'ca.umanitoba.dam.islandora.derivatives.worker'
     }
 }
@@ -61,7 +67,7 @@ test {
         // standard out or error is shown
         // in Gradle output.
         // showStandardStreams = true
-        events 'standard_out'
-        exceptionFormat = 'full'
+        //events 'standard_out'
+        //exceptionFormat = 'full'
     }
 }
