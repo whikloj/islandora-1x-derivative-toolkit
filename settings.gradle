@@ -12,8 +12,10 @@
 rootProject.name = 'islandora-1x-derivative-toolkit'
 include ':islandora-1x-gatekeeper'
 include ':islandora-1x-derivative-worker'
+include ':islandora-1x-queue-splitter'
 include ':karaf'
 
 project(':islandora-1x-gatekeeper').projectDir = "$rootDir/islandora-1x-gatekeeper" as File
 project(':islandora-1x-derivative-worker').projectDir = "$rootDir/islandora-1x-derivative-worker" as File
+project(':islandora-1x-queue-splitter').projectDir = "$rootDir/islandora-1x-queue-splitter" as File
 project(':karaf').projectDir = "$rootDir/karaf" as File

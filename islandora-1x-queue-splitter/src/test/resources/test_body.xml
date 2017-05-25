@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<entry xmlns="http://www.w3.org/2005/Atom" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:fedora-types="http://www.fedora.info/definitions/1/0/types/">
+  <id>urn:uuid:7694d856-1e13-42d6-9477-388b3bd24a25</id>
+  <updated>2017-03-13T21:49:08.518Z</updated>
+  <author>
+    <name>username</name>
+    <uri>http://localhost:8080/fedora</uri>
+  </author>
+  <title type="text">ingest</title>
+  <category term="" scheme="fedora-types:logMessage" label="xsd:string"></category>
+  <category term="info:fedora/fedora-system:FOXML-1.1" scheme="fedora-types:format" label="xsd:string"></category>
+  <summary type="text">islandora:123</summary>
+  <content type="text">islandora:123</content>
+  <category term="3.8.1" scheme="info:fedora/fedora-system:def/view#version"></category>
+  <category term="info:fedora/fedora-system:ATOM-APIM-1.0" scheme="http://www.fedora.info/definitions/1/0/types/formatURI"></category>
+</entry>

@@ -8,6 +8,7 @@ import static org.apache.camel.Exchange.HTTP_URI;
 import static org.apache.camel.LoggingLevel.DEBUG;
 import static org.apache.camel.LoggingLevel.ERROR;
 import static org.apache.camel.LoggingLevel.TRACE;
+import static org.apache.camel.LoggingLevel.WARN;
 import static org.apache.camel.builder.PredicateBuilder.and;
 import static org.apache.camel.builder.PredicateBuilder.or;
 import static org.slf4j.LoggerFactory.getLogger;
@@ -25,6 +26,7 @@ import org.apache.camel.Exchange;
 import org.apache.camel.Predicate;
 import org.apache.camel.Processor;
 import org.apache.camel.PropertyInject;
+import org.apache.camel.builder.LoggingErrorHandlerBuilder;
 import org.apache.camel.builder.RouteBuilder;
 import org.apache.camel.http.common.HttpOperationFailedException;
 import org.slf4j.Logger;
@@ -52,7 +54,10 @@ public class ImageRoutes extends RouteBuilder {
     private ObjectMapper mapper = new ObjectMapper();
 
     @PropertyInject(value = "gatekeeper.process_dsids")
-    protected String process_dsids;
+    private String process_dsids;
+
+    @PropertyInject(value = "error.maxRedeliveries")
+    private int maxRedeliveries;
 
     @BeanInject(value = "staticStore")
     protected StaticMap staticStore;
@@ -101,6 +106,9 @@ public class ImageRoutes extends RouteBuilder {
 		    .routeId("UmlDerivativeGetInfo")
             .startupOrder(10)
             .log(TRACE, LOGGER, "in direct:getObjectInfo")
+            .errorHandler(deadLetterChannel("direct:getObjectInfo-error")
+                .useOriginalMessage()
+                .maximumRedeliveries(maxRedeliveries))
             .filter(new Predicate() {
 
                 @Override
@@ -146,21 +154,22 @@ public class ImageRoutes extends RouteBuilder {
                     .to("direct:getObjectInfo")
             .end();
 
+		/**
+		 * Log dead messages and store them.
+		 */
+		from("direct:getObjectInfo-error")
+		    .routeId("UmlGetObjectInfoError")
+		    .log(WARN, LOGGER, "Cannot get object information for PID ${property[PID]}, leaving in {{objectInfo.dead.queue}}")
+		    .to("{{objectInfo.dead.queue}}");
+		
+		
         /**
          * Log in to Islandora to get the required cookies.
          */
 		from("direct:drupalLogin")
 		  .routeId("UmlDerivativeLogin")
-            .log(TRACE, LOGGER, "in drupalLogin")
-            .onException(HttpOperationFailedException.class)
-            .maximumRedeliveries(0)
-            .handled(true)
-            .log(
-                ERROR,
-                LOGGER,
-                "Error logging in to Islandora site: ${exception.message}\n\n${exception.stacktrace}")
-            .end()
-            .to("direct:getToken")
+          .log(TRACE, LOGGER, "in drupalLogin")
+          .to("direct:getToken")
           .setHeader(CONTENT_TYPE, constant("application/json"))
           .setHeader(ACCEPT_CONTENT_TYPE, constant("application/json"))
           .setHeader(HTTP_METHOD, constant("POST"))
@@ -170,7 +179,7 @@ public class ImageRoutes extends RouteBuilder {
           .to("http4://localhost?throwExceptionOnFailure=false")
           .setProperty("loginCompleted", constant(true))
           .convertBodyTo(String.class, "UTF-8")
-            .log(TRACE, LOGGER, "body is ${body}")
+          .log(TRACE, LOGGER, "body is ${body}")
           .log(DEBUG,  LOGGER, "Got a ${header[CamelHttpResponseCode]} from login")
           .choice()
             .when(header(HTTP_RESPONSE_CODE).isEqualTo(200))
@@ -195,13 +204,14 @@ public class ImageRoutes extends RouteBuilder {
                      }
             })
             .when(header(HTTP_RESPONSE_CODE).isEqualTo(406))
-            .log(DEBUG, LOGGER, "Received 406, need to logout first")
-            .removeHeaders("HttpCamel*")
-            .removeProperty("loginComplete")
-            .setHeader(HTTP_METHOD, constant("POST"))
-            .setHeader(HTTP_URI, simple("{{islandora.hostname}}{{islandora.login.service}}/user/logout"))
-            .to("http4://localhost?throwExceptionOnFailure=true")
-            .to("direct:drupalLogin")
+                // 406 is you are already logged in, need to logout first
+                .log(DEBUG, LOGGER, "Received 406, need to logout first")
+                .removeHeaders("HttpCamel*")
+                .removeProperty("loginComplete")
+                .setHeader(HTTP_METHOD, constant("POST"))
+                .setHeader(HTTP_URI, simple("{{islandora.hostname}}{{islandora.login.service}}/user/logout"))
+                .to("http4://localhost?throwExceptionOnFailure=true")
+                .to("direct:drupalLogin")
             .otherwise()
                 .log(ERROR, LOGGER,
                 "Could not login to Islandora, received a (${header[CamelHttpResponseCode]})")

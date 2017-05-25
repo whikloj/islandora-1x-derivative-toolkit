@@ -1,0 +1,71 @@
+apply plugin: 'osgi'
+
+description = "Simple multicaster needed by the gateway"
+
+ext {
+	buildName = "islandora-derivatives-queue-splitter"
+	buildGroup = 'ca.umanitoba.dam.islandora.derivatives.queuesplitter'
+}
+
+// In this section you declare the dependencies for your production and test code
+dependencies {
+	compile group: 'org.apache.camel', name: 'camel-core', version: versions.camel
+	compile group: 'org.apache.camel', name: 'camel-blueprint', version: versions.camel
+	compile group: 'org.apache.camel', name: 'camel-jms', version: versions.camel
+	compile group: 'org.slf4j', name: 'slf4j-api', version: versions.slf4j
+	compile group: 'commons-io', name: 'commons-io', version: versions.apacheCommons
+
+	testCompile group: 'org.apache.camel', name: 'camel-test-blueprint', version: versions.camel
+  	testCompile group: 'org.slf4j', name: 'slf4j-log4j12', version: versions.slf4j
+	testCompile group: 'org.mockito', name: 'mockito-all', version: versions.mockito
+	testCompile group: 'org.ow2.asm', name: 'asm-commons', version: versions.asmCommons
+	testCompile group: 'org.apache.aries.blueprint', name: 'org.apache.aries.blueprint', version: '1.1.0'
+	
+}
+
+artifacts {
+    archives (file('build/cfg/main/ca.umanitoba.dam.islandora.derivatives.queuesplitter.cfg')) {
+        classifier 'configuration'
+        type 'cfg'
+    }
+}
+
+// Make our JAR file
+jar {
+    manifest {
+      description project.description
+      vendor project.vendor
+      docURL project.docURL
+      license project.license
+
+      instruction 'Import-Package', "org.apache.activemq," +
+                "org.apache.activemq.pool," +
+      			"org.apache.activemq.camel.component;version=\"${versions.activemqRange}\"," +
+      			"org.apache.camel.component.jms," +
+      			"org.apache.camel;version=\"${versions.camelRange}\"," +
+                defaultOsgiImports
+      instruction 'Export-Package', 'ca.umanitoba.dam.islandora.derivatives.queuesplitter'
+    }
+}
+
+sourceSets {
+    test {
+    	output.resourcesDir = "build/resources/test"
+    	resources {
+    		srcDir "src/test/resources"
+    	}
+    }
+}
+
+test {
+	//systemProperties 'logback.configurationFile' : new File(projectDir,'src/test/resources/logback-test.xml').absolutePath
+
+    testLogging {
+        // Make sure output from
+        // standard out or error is shown
+        // in Gradle output.
+        // showStandardStreams = true
+        events 'standard_out', 'standard_error'
+        exceptionFormat = 'full'
+    }
+}

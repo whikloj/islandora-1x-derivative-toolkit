@@ -40,4 +40,17 @@
   	<configfile finalname="/etc/ca.umanitoba.dam.islandora.derivatives.worker.cfg">mvn:ca.umanitoba.dam.islandora.derivatives/islandora-1x-derivative-worker/${project.version}/cfg/configuration</configfile>
   </feature>
 
+ <feature name="islandora-1x-queue-splitter" version="${project.version}" start-level="75">
+    <details>Multicasts messages from input queue to 2 or more output queues.</details>
+
+    <feature version="${versions.camelRange}">camel-blueprint</feature>
+    <feature version="${versions.camelRange}">camel-jms</feature>
+    <feature version="${versions.activemqRange}">activemq-camel</feature>
+    <bundle dependency="true">mvn:org.apache.activemq/activemq-pool/${versions.activemq}</bundle>
+
+    <bundle>mvn:ca.umanitoba.dam.islandora.derivatives/islandora-1x-queue-splitter/${project.version}</bundle>
+
+    <configfile finalname="/etc/ca.umanitoba.dam.islandora.derivatives.queuesplitter.cfg">mvn:ca.umanitoba.dam.islandora.derivatives/islandora-1x-queue-splitter/${project.version}/cfg/configuration</configfile>
+
+  </feature>
 </features>

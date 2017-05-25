@@ -13,6 +13,7 @@
       <cm:property name="concurrent.consumers" value="1"/>
       <cm:property name="input.queue" value="direct:jmsIn"/>
       <cm:property name="output.queue" value="direct:end"/>
+      <cm:property name="objectInfo.dead.queue" value="direct:dead_letter"/>
       <cm:property name="gatekeeper.process_dsids" value="OCR,HOCR"/>
       <cm:property name="gatekeeper.process_contentTypes" value="islandora:sp_large_image_cmodel"/>
       <cm:property name="islandora.rest.infoUri" value="/rest/v1/object/%PID%/full_info"/>
