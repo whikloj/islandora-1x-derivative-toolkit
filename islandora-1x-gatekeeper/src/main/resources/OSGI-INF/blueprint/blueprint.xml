@@ -18,8 +18,6 @@
       <cm:property name="gatekeeper.process_dsids" value=""/>
       <cm:property name="gatekeeper.process_contentTypes" value=""/>
       <cm:property name="islandora.rest.infoUri" value="/rest/v1/object/%PID%/full_info"/>
-      <cm:property name="islandora.username" value=""/>
-      <cm:property name="islandora.password" value=""/>
       <cm:property name="islandora.hostname" value="http://127.0.0.1:80"/>
       <cm:property name="islandora.basepath" value="/islandora"/>
       <cm:property name="islandora.login.service" value="/umldam"/>
@@ -28,6 +26,8 @@
   
   <bean id="jmsConnectionFactory" class="org.apache.activemq.ActiveMQConnectionFactory">
     <property name="brokerURL" value="${jms.brokerUrl}"/>
+    <property name="userName" value="${jms.username}"/>
+    <property name="password" value="${jms.password}"/>
   </bean>
 
   <bean id="pooledConnectionFactory"
