@@ -45,6 +45,9 @@ public class IslandoraInfoFilter implements Predicate {
             headers.remove("X-Islandora-Process-Dsids");
             headers.put("X-Islandora-Process-Dsids", validDSIDs.stream().collect(Collectors.joining(",")));
             exchange.getOut().setBody(exchange.getIn().getBody());
+            LOGGER.info("Object matches DSID/ContentModel requirements, sending to derivative workers");
+        } else {
+            LOGGER.info("Object does not match DSID/ContentModel requirements, exiting.");
         }
         return result;
     }
