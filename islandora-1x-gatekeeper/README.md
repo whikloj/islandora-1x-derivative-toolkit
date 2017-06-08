@@ -8,7 +8,7 @@ To allow for permitted access to the above endpoint, this tool needs to login us
 
 ## Deployment
 This is an OSGI feature, which is designed to be deployed in an OSGI container (like Apache Karaf).
-It is **not** currently deployed to Maven Central or any other repositories (:sad: sorry), see the parent [islandora-1x-derivative-toolkit](../) 
+It is **not** currently deployed to Maven Central or any other repositories (:sad: sorry), see the parent [islandora-1x-derivative-toolkit](https://github.com/whikloj/islandora-1x-derivative-toolkit) 
 for instructions to build and load the `features.xml`.
 
 
