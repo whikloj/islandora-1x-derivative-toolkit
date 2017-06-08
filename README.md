@@ -3,6 +3,21 @@
 This bundle of tools is to push the creation of derivatives to a (or multiple) separate machines. Each tool has a more in-depth explanation of its use.
 
 **Note**: Currently this only supports the creation of OCR and HOCR, but can be extended to other derivatives in future.
+## Workflow
+
+1. Fedora emits messages as per normal.
+2. Messages are received by the islandora-1x-queue-splitter and passed to 2 output queues.
+3. Gatekeeper receives on one queue.
+3. Checks with Drupal for more information.
+1. If the object is of a type we want and the derivatives are ones we can do. If yes, pass along a new message.
+4. Derivative worker picks up this new message with the PID and derivative source and destination dsids to use.
+5. Get the source file from Fedora
+6. Perform the requested action (OCR or HOCR)
+7. Put the newly created data back in Fedora (either a PUT or POST).
+
+---
+![workflow animated git](https://user-images.githubusercontent.com/2857697/26948147-eb2785aa-4c5a-11e7-947d-680ce2697e49.gif)
+
 
 ## Deployment
 This is an OSGI feature, which is designed to be deployed in an OSGI container (like Apache Karaf).
