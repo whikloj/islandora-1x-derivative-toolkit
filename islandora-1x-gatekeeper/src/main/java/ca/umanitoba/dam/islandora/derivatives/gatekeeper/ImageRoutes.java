@@ -143,7 +143,7 @@ public class ImageRoutes extends RouteBuilder {
             .to("http4://localhost?throwExceptionOnFailure=false")
             .log(DEBUG, LOGGER, "RESPONSE CODE is (${headers[CamelHttpResponseCode]})")
             .choice()
-                .when(and(or(header(HTTP_RESPONSE_CODE).isEqualTo(403), header(HTTP_RESPONSE_CODE).isEqualTo(500)),
+                .when(and(or(header(HTTP_RESPONSE_CODE).isEqualTo(403), header(HTTP_RESPONSE_CODE).isEqualTo(401)),
                 exchangeProperty("loginCompleted").isEqualTo(true)))
                     .log(ERROR, LOGGER, "Can't get information for ${property[PID]} from Islandora.")
                     .stop()
@@ -152,6 +152,12 @@ public class ImageRoutes extends RouteBuilder {
                     .log(DEBUG, LOGGER, "Got a ${header[CamelHttpResponseCode]}, logging into Islandora")
                     .to("direct:drupalLogin")
                     .to("direct:getObjectInfo")
+                .when(header(HTTP_RESPONSE_CODE).isEqualTo(404))
+                    .log(WARN, LOGGER, "Object ${property[PID]} was not found in Islandora, received a ${header[CamelHttpResponseCode]}")
+                    .stop()
+                .when(header(HTTP_RESPONSE_CODE).not().isEqualTo(200))
+                    .log(ERROR, LOGGER, "Unexpected response from Islandora, ${header[CamelHttpResponseCode]}: ${header[CamelHttpResponseText]}")
+                    .stop()
             .end();
 
 		/**
