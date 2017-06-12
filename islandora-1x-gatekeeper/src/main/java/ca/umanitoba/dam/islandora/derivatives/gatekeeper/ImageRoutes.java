@@ -26,9 +26,7 @@ import org.apache.camel.Exchange;
 import org.apache.camel.Predicate;
 import org.apache.camel.Processor;
 import org.apache.camel.PropertyInject;
-import org.apache.camel.builder.LoggingErrorHandlerBuilder;
 import org.apache.camel.builder.RouteBuilder;
-import org.apache.camel.http.common.HttpOperationFailedException;
 import org.slf4j.Logger;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
@@ -167,8 +165,8 @@ public class ImageRoutes extends RouteBuilder {
 		    .routeId("UmlGetObjectInfoError")
 		    .log(WARN, LOGGER, "Cannot get object information for PID ${property[PID]}, leaving in {{objectInfo.dead.queue}}")
 		    .to("{{objectInfo.dead.queue}}");
-		
-		
+
+
         /**
          * Log in to Islandora to get the required cookies.
          */
@@ -179,7 +177,7 @@ public class ImageRoutes extends RouteBuilder {
           .setHeader(CONTENT_TYPE, constant("application/json"))
           .setHeader(ACCEPT_CONTENT_TYPE, constant("application/json"))
           .setHeader(HTTP_METHOD, constant("POST"))
-          .setBody(simple("{ \"name\": \"{{islandora.username}}\", \"pass\": \"{{islandora.password}}\"}"))
+            .setBody(simple("{ \"username\": \"{{islandora.username}}\", \"password\": \"{{islandora.password}}\"}"))
           .setHeader(HTTP_URI, simple("{{islandora.hostname}}{{islandora.login.service}}/user/login"))
           .log(DEBUG, LOGGER, "Login to URI ${header[CamelHttpUri]}")
           .to("http4://localhost?throwExceptionOnFailure=false")
