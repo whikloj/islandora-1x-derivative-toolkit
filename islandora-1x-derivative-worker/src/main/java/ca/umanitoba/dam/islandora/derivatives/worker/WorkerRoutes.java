@@ -11,6 +11,9 @@ import static org.apache.camel.LoggingLevel.INFO;
 import static org.apache.camel.LoggingLevel.WARN;
 import static org.apache.camel.builder.PredicateBuilder.and;
 import static org.apache.camel.component.exec.ExecBinding.EXEC_COMMAND_ARGS;
+import static org.apache.camel.component.exec.ExecBinding.EXEC_COMMAND_WORKING_DIR;
+import static org.apache.camel.component.exec.ExecBinding.EXEC_EXIT_VALUE;
+import static org.apache.camel.component.exec.ExecBinding.EXEC_STDERR;
 import static org.slf4j.LoggerFactory.getLogger;
 
 import java.net.URLEncoder;
@@ -62,13 +65,6 @@ public class WorkerRoutes extends RouteBuilder {
          * Queue subscriber.
          */
         from("{{input.queue}}")
-            .routeId("UmlDerivativeWorkerRouter")
-            .to("seda:workerMain");
-
-        /**
-         * Main workflow.
-         */
-        from("seda:workerMain?blockWhenFull=true&concurrentConsumers={{concurrent.consumers}}")
             .routeId("UmlDerivativeWorkerMain")
             .setProperty("pid").jsonpath("$.pid")
             .log(DEBUG, LOGGER, "Processing pid ${headers.pid}")
@@ -150,7 +146,32 @@ public class WorkerRoutes extends RouteBuilder {
                 exchange.getIn().setHeader(EXEC_COMMAND_ARGS, " stdin stdout " + cmdOptions);
             })
             .removeHeaders("CamelHttp*")
-            .to("exec:{{tesseract.path}}");
+            .to("exec:{{tesseract.path}}")
+            .filter(header(EXEC_EXIT_VALUE).not().isEqualTo(0))
+            .log(ERROR, "Problem creating HOCR - ${header." + EXEC_STDERR + "}")
+            // .to("direct:makeGreyTiff")
+            // .to("direct:OcrFromGray")
+            // .removeHeaders("*")
+            // .setHeader(EXEC_COMMAND_WORKING_DIR, simple("${property.workingDir}"))
+            // .setBody(constant(null))
+            // .setHeader(EXEC_COMMAND_ARGS, simple(" ${property.workingDir}/OBJ_gray.tiff"))
+            // .to("exec:/bin/rm")
+            .end();
+
+        /**
+         * Make a Greyscale version of the Tiff
+         */
+        from("direct:makeGreyTiff")
+            .description("Make a greyscale Tiff for Tesseract")
+            .log(DEBUG, "Making a Tiff greyscale for ${property[PID]}")
+            .removeHeaders("*")
+            .setHeader(EXEC_COMMAND_WORKING_DIR, simple("${property.workingDir}"))
+            .setBody(constant(null))
+            .setHeader(EXEC_COMMAND_ARGS,
+                simple("${property.tiffFile} -colorspace gray -quality 100 ${property.workingDir}/OBJ_gray.tiff"))
+            .to("exec:{{apps.convert}}")
+            .filter(header(EXEC_EXIT_VALUE).not().isEqualTo(0))
+            .log(ERROR, "Problem creating Greyscale Tiff - ${header." + EXEC_STDERR + "}");
 
         /**
          * Get the source file from Fedora.

@@ -32,22 +32,23 @@ public class IslandoraInfoFilter implements Predicate {
 
     @Override
     public boolean matches(Exchange exchange) {
-
+        final String pid = exchange.getProperty("PID", String.class);
+        LOGGER.trace("PID is {}", pid);
         LOGGER.trace("process_dsids is {}", process_dsid);
         LOGGER.trace("process_contentTypes is {}", process_contentTypes);
         validDSIDs = new HashSet<String>(Arrays.asList(process_dsid.split(",")));
         validTypes = new HashSet<String>(Arrays.asList(process_contentTypes.split(",")));
-        String json = exchange.getIn().getBody(String.class);
-        ReadContext ctx = JsonPath.parse(json);
-        boolean result = (matchDSIDs(ctx) && matchContentTypes(ctx));
+        final String json = exchange.getIn().getBody(String.class);
+        final ReadContext ctx = JsonPath.parse(json);
+        final boolean result = (matchDSIDs(ctx) && matchContentTypes(ctx));
         if (result) {
-            Map<String, Object> headers = exchange.getOut().getHeaders();
+            final Map<String, Object> headers = exchange.getOut().getHeaders();
             headers.remove("X-Islandora-Process-Dsids");
             headers.put("X-Islandora-Process-Dsids", validDSIDs.stream().collect(Collectors.joining(",")));
             exchange.getOut().setBody(exchange.getIn().getBody());
-            LOGGER.info("Object matches DSID/ContentModel requirements, sending to derivative workers");
+            LOGGER.info("Object {} matches DSID/ContentModel requirements, sending to derivative workers", pid);
         } else {
-            LOGGER.info("Object does not match DSID/ContentModel requirements, exiting.");
+            LOGGER.info("Object {} does not match DSID/ContentModel requirements, exiting.", pid);
         }
         return result;
     }
@@ -58,8 +59,8 @@ public class IslandoraInfoFilter implements Predicate {
      * @param json Parsed JSON message.
      * @return True if there is a matching DSID in the message.
      */
-    private boolean matchDSIDs(ReadContext json) {
-        Set<String> receivedDSIDs = new HashSet<String>(json.read("$.derivative_info[*].destination_dsid"));
+    private boolean matchDSIDs(final ReadContext json) {
+        final Set<String> receivedDSIDs = new HashSet<String>(json.read("$.derivative_info[*].destination_dsid"));
         LOGGER.trace("DSIDs received ({})", receivedDSIDs);
         LOGGER.trace("valid DSIDs ({})", validDSIDs);
         validDSIDs.retainAll(receivedDSIDs);
@@ -73,8 +74,8 @@ public class IslandoraInfoFilter implements Predicate {
      * @param json Parsed JSON message.
      * @return True if there is a matching content model in the message.
      */
-    private boolean matchContentTypes(ReadContext json) {
-        Set<String> objectTypes = new HashSet<String>(json.read("$.object_info.models"));
+    private boolean matchContentTypes(final ReadContext json) {
+        final Set<String> objectTypes = new HashSet<String>(json.read("$.object_info.models"));
 
         LOGGER.trace("contentTypes retrieved ({})", objectTypes);
         LOGGER.trace("valid contentTypes ({})", validTypes);

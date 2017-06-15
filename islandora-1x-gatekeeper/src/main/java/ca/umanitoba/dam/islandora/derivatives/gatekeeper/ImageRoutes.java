@@ -76,13 +76,6 @@ public class ImageRoutes extends RouteBuilder {
 		 * Input queue and main route.
 		 */
 		from("{{input.queue}}")
-            .routeId("UmlDerivativeQueueConsumer")
-            .to("seda:mainRouter");
-
-        /**
-         * Do the main routing.
-         */
-        from("seda:mainRouter?blockWhenFull=true&concurrentConsumers={{concurrent.consumers}}")
             .routeId("UmlDerivativeMainRouter")
             .streamCaching()
             .log(DEBUG, LOGGER, "Received message on input queue for ${headers[pid]}")
