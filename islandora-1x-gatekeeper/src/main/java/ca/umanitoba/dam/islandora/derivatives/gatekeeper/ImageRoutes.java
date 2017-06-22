@@ -79,7 +79,7 @@ public class ImageRoutes extends RouteBuilder {
         /**
          * Configure rest endpoint
          */
-        restConfiguration().component("spark-rest").port(restPortNum);
+        restConfiguration().component("spark-rest").host("localhost").port(restPortNum);
 
         /**
          *

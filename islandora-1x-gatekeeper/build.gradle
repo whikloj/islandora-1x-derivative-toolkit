@@ -55,7 +55,7 @@ jar {
       			"org.apache.camel.component.http4," +
       			"org.apache.camel.http.common," +
       			"org.apache.camel.component.jms," +
-      			"org.apache.camel.component.spark-rest," +
+      			"org.apache.camel.component.sparkrest," +
       			"org.apache.camel;version=\"${versions.camelRange}\"," +
                 defaultOsgiImports
       instruction 'Export-Package', 'ca.umanitoba.dam.islandora.derivatives.gatekeeper'
