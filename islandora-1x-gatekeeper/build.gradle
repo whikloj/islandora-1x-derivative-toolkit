@@ -15,6 +15,7 @@ dependencies {
 	compile group: 'org.apache.camel', name: 'camel-core', version: versions.camel
 	compile group: 'org.apache.camel', name: 'camel-blueprint', version: versions.camel
 	compile group: 'org.apache.camel', name: 'camel-jsonpath', version: versions.camel
+	compile group: 'org.apache.camel', name: 'camel-spark-rest', version: versions.camel
 	compile group: 'org.apache.camel', name: 'camel-http4', version: versions.camel
 	compile group: 'org.apache.camel', name: 'camel-http-common', version: versions.camel
 	compile group: 'org.slf4j', name: 'slf4j-api', version: versions.slf4j
@@ -54,6 +55,7 @@ jar {
       			"org.apache.camel.component.http4," +
       			"org.apache.camel.http.common," +
       			"org.apache.camel.component.jms," +
+      			"org.apache.camel.component.spark-rest," +
       			"org.apache.camel;version=\"${versions.camelRange}\"," +
                 defaultOsgiImports
       instruction 'Export-Package', 'ca.umanitoba.dam.islandora.derivatives.gatekeeper'

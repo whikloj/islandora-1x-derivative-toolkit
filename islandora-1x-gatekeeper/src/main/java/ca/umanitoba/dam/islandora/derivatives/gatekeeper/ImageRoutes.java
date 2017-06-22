@@ -5,6 +5,7 @@ import static org.apache.camel.Exchange.CONTENT_TYPE;
 import static org.apache.camel.Exchange.HTTP_METHOD;
 import static org.apache.camel.Exchange.HTTP_RESPONSE_CODE;
 import static org.apache.camel.Exchange.HTTP_URI;
+import static org.apache.camel.ExchangePattern.InOnly;
 import static org.apache.camel.LoggingLevel.DEBUG;
 import static org.apache.camel.LoggingLevel.ERROR;
 import static org.apache.camel.LoggingLevel.TRACE;
@@ -57,6 +58,9 @@ public class ImageRoutes extends RouteBuilder {
     @PropertyInject(value = "error.maxRedeliveries")
     private int maxRedeliveries;
 
+    @PropertyInject(value = "rest.port_number")
+    private int restPortNum;
+
     @BeanInject(value = "staticStore")
     protected StaticMap staticStore;
 
@@ -71,6 +75,33 @@ public class ImageRoutes extends RouteBuilder {
             LOGGER,
             "Error processing object through gatekeeper: ${exception.message}\n\n${exception.stacktrace}"
         );
+
+        /**
+         * Configure rest endpoint
+         */
+        restConfiguration().component("spark-rest").port(restPortNum);
+
+        /**
+         *
+         */
+        rest("/process")
+            .id("UmlDerivativeGatekeeperRest")
+            .get("/pid/{pid}").to("direct:internalQueue");
+
+        /**
+         * To ensure we abide by concurrent consumer rules for direct additions too.
+         */
+        from("direct:internalQueue")
+            .routeId("UmlDerivativeGatekeeperInternalQueue")
+            .setExchangePattern(InOnly)
+            .setHeader("methodName", constant("ingest"))
+            .setBody(simple("<?xml version=\"1.0\" encoding=\"UTF-8\"?>" +
+                "<entry xmlns=\"http://www.w3.org/2005/Atom\" xmlns:xsd=\"http://www.w3.org/2001/XMLSchema\" xmlns:fedora-types=\"http://www.fedora.info/definitions/1/0/types/\">" +
+                "  <title type=\"text\">ingest</title>" +
+                "  <summary type=\"text\">${header[pid]}</summary>" +
+                "  <content type=\"text\">${header[pid]}</content>" +
+                "</entry>"))
+            .to("{{input.queue}}");
 
 		/**
 		 * Input queue and main route.

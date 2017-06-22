@@ -178,6 +178,10 @@ public class WorkerRoutes extends RouteBuilder {
          */
         from("direct:getSourceFile")
             .routeId("UmlDerivativeWorkerHeadSource")
+            .errorHandler(deadLetterChannel("direct:failedSource")
+                .useOriginalMessage()
+                .maximumRedeliveries(10)
+                .maximumRedeliveryDelay(30000))
             .streamCaching()
             .removeHeaders("CamelHttp*")
             .removeHeader(ACCEPT_CONTENT_TYPE)
@@ -215,6 +219,10 @@ public class WorkerRoutes extends RouteBuilder {
 
         from("direct:putDSID")
             .routeId("UmlDerivativeWorkerUpload")
+            .errorHandler(deadLetterChannel("direct:failedUpload")
+                .useOriginalMessage()
+                .maximumRedeliveries(10)
+                .maximumRedeliveryDelay(30000))
             .streamCaching()
             .setProperty("FileHolder", body())
             .setHeader(HTTP_URI,

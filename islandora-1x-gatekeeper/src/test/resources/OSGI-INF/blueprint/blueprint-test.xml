@@ -22,6 +22,7 @@
       <cm:property name="islandora.hostname" value="http://127.0.0.1:80"/>
       <cm:property name="islandora.basepath" value="/islandora"/>
       <cm:property name="islandora.login.service" value="/umldam"/>
+      <cm:property name="rest.port_number" value="9191"/>
     </cm:default-properties>
   </cm:property-placeholder>
   
