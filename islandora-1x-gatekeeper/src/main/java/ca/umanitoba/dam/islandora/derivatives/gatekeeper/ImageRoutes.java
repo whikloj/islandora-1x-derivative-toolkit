@@ -101,7 +101,8 @@ public class ImageRoutes extends RouteBuilder {
                 "  <summary type=\"text\">${header[pid]}</summary>" +
                 "  <content type=\"text\">${header[pid]}</content>" +
                 "</entry>"))
-            .to("{{input.queue}}");
+            .to("{{input.queue}}")
+            .setBody(constant(""));
 
 		/**
 		 * Input queue and main route.
