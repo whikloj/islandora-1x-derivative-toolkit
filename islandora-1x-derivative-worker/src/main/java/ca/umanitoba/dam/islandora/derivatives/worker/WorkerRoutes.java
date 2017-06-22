@@ -159,19 +159,19 @@ public class WorkerRoutes extends RouteBuilder {
             .end();
 
         /**
-         * Make a Greyscale version of the Tiff
+         * Make a Greyscale version of the Tiff TODO: See if this is needed and if so, how to use in a streaming sense.
          */
-        from("direct:makeGreyTiff")
-            .description("Make a greyscale Tiff for Tesseract")
-            .log(DEBUG, "Making a Tiff greyscale for ${property[PID]}")
-            .removeHeaders("*")
-            .setHeader(EXEC_COMMAND_WORKING_DIR, simple("${property.workingDir}"))
-            .setBody(constant(null))
-            .setHeader(EXEC_COMMAND_ARGS,
-                simple("${property.tiffFile} -colorspace gray -quality 100 ${property.workingDir}/OBJ_gray.tiff"))
-            .to("exec:{{apps.convert}}")
-            .filter(header(EXEC_EXIT_VALUE).not().isEqualTo(0))
-            .log(ERROR, "Problem creating Greyscale Tiff - ${header." + EXEC_STDERR + "}");
+        // from("direct:makeGreyTiff")
+        // .description("Make a greyscale Tiff for Tesseract")
+        // .log(DEBUG, "Making a Tiff greyscale for ${property[PID]}")
+        // .removeHeaders("*")
+        // .setHeader(EXEC_COMMAND_WORKING_DIR, simple("${property.workingDir}"))
+        // .setBody(constant(null))
+        // .setHeader(EXEC_COMMAND_ARGS,
+        // simple("${property.tiffFile} -colorspace gray -quality 100 ${property.workingDir}/OBJ_gray.tiff"))
+        // .to("exec:{{apps.convert}}")
+        // .filter(header(EXEC_EXIT_VALUE).not().isEqualTo(0))
+        // .log(ERROR, "Problem creating Greyscale Tiff - ${header." + EXEC_STDERR + "}");
 
         /**
          * Get the source file from Fedora.
