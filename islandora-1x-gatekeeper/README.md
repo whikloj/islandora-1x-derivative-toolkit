@@ -88,6 +88,10 @@ islandora.login.service=/umldam
 ```
 The name of your [Services](http://www.drupal.org/project/services) endpoint with user login/logout services.
 
+```
+rest.port_number=9191
+```
+The port number on localhost for [direct processing](#direct-processing).
 
 ## Workflow description
 This tool receives standard Fedora messages from a queue, it checks immediately for one of two requirements
@@ -107,6 +111,7 @@ The final step for any message allowed through is to reformat the message to app
   "derivatives" : [<array of derivative listings>]
 }
 ```
+
 where the _array of derivative listings_ is of the format
 ```
 {
@@ -116,3 +121,15 @@ where the _array of derivative listings_ is of the format
 ```
   
 It then outputs this message on a configurable output queue.
+
+## Direct processing
+In case something has gone wrong and you want to re-process an object there is an endpoint available at `http://localhost:<rest port>/process/pid/<URL encoded PID>`
+
+This will generate a fake Fedora message and add it to the gatekeeper input queue to be handled in order.
+
+ie.
+```
+curl -i -G http://localhost:9191/process/pid/islandora%3Atest_image
+```
+
+The port is configurable and listed above.
