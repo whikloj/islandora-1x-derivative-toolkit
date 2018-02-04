@@ -41,7 +41,6 @@ jar {
       			"org.apache.activemq.camel.component;version=\"${versions.activemqRange}\"," +
       			"org.apache.commons.io," + 
                 "org.apache.camel.component.http4," +
-                "org.apache.camel.http.common," +
       			"org.apache.camel.component.exec," +
       			"org.apache.camel.component.jms," +
                 "org.apache.camel;version=\"${versions.camelRange}\"," + 

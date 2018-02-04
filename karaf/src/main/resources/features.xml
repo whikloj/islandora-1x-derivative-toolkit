@@ -7,11 +7,12 @@
  <feature name="islandora-1x-gatekeeper" version="${project.version}" start-level="80">
     <details>Determines whether to pass along Islandora Objects based on content-type and datastream IDs</details>
 
+    <feature version="${versions.camelRange}">camel</feature>
     <feature version="${versions.camelRange}">camel-blueprint</feature>
     <feature version="${versions.camelRange}">camel-jsonpath</feature>
     <feature version="${versions.camelRange}">camel-jms</feature>
     <feature version="${versions.camelRange}">camel-http4</feature>
-    <feature version="${versions.camelRange}">camel-spark-rest</feature>
+    <feature version="${versions.camelRange}">camel-servlet</feature>
     <feature version="${versions.activemqRange}">activemq-camel</feature>
     <bundle dependency="true">mvn:commons-io/commons-io/${versions.apacheCommons}</bundle>
     <bundle dependency="true">mvn:org.apache.httpcomponents/httpclient-osgi/${versions.httpclient}</bundle>
@@ -26,6 +27,7 @@
   
   <feature name="islandora-1x-derivative-worker" version="${project.version}" start-level="80">
   	<details>Handles messages from Gatekeeper, currently only processes HOCR/OCR requests with Tesseract.</details>
+  	<feature version="${versions.camelRange}">camel</feature>
   	<feature version="${versions.camelRange}">camel-blueprint</feature>
   	<feature version="${versions.camelRange}">camel-jsonpath</feature>
   	<feature version="${versions.camelRange}">camel-http4</feature>
@@ -44,6 +46,7 @@
  <feature name="islandora-1x-queue-splitter" version="${project.version}" start-level="75">
     <details>Multicasts messages from input queue to 2 or more output queues.</details>
 
+	<feature version="${versions.camelRange}">camel</feature>   
     <feature version="${versions.camelRange}">camel-blueprint</feature>
     <feature version="${versions.camelRange}">camel-jms</feature>
     <feature version="${versions.activemqRange}">activemq-camel</feature>

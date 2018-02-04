@@ -50,7 +50,7 @@ public class ImageRoutes extends RouteBuilder {
 
     private static final String SESSION_COOKIE = "DrupalSessionCookie";
 
-    private ObjectMapper mapper = new ObjectMapper();
+    private final ObjectMapper mapper = new ObjectMapper();
 
     @PropertyInject(value = "gatekeeper.process_dsids")
     private String process_dsids;
@@ -61,12 +61,16 @@ public class ImageRoutes extends RouteBuilder {
     @PropertyInject(value = "rest.port_number")
     private int restPortNum;
 
+    @PropertyInject(value = "rest.path")
+    private String restPath;
+
     @BeanInject(value = "staticStore")
     protected StaticMap staticStore;
 
     @Override
     public void configure() throws Exception {
 
+        final String fullPath = (!restPath.startsWith("/") ? "/" : "") + restPath + "/process";
         onException(Exception.class)
         .maximumRedeliveries("{{error.maxRedeliveries}}")
         .handled(true)
@@ -79,19 +83,15 @@ public class ImageRoutes extends RouteBuilder {
         /**
          * Configure rest endpoint
          */
-        restConfiguration().component("spark-rest").host("localhost").port(restPortNum);
+        restConfiguration().component("jetty").host("localhost").port(restPortNum);
 
         /**
          *
          */
-        rest("/process")
+        rest(fullPath)
             .id("UmlDerivativeGatekeeperRest")
-            .get("/pid/{pid}").to("direct:internalQueue");
-
-        /**
-         * To ensure we abide by concurrent consumer rules for direct additions too.
-         */
-        from("direct:internalQueue")
+            .get("/pid/{pid}")
+            .route()
             .routeId("UmlDerivativeGatekeeperInternalQueue")
             .setExchangePattern(InOnly)
             .setHeader("methodName", constant("ingest"))
@@ -290,9 +290,9 @@ public class ImageRoutes extends RouteBuilder {
                     final String pid = ctx.read("$.object_info.pid");
                     final List<Map<String, Object>> derivative_map = ctx.read("$.derivative_info[*]");
                     LOGGER.trace("derivative map is {}", derivative_map);
-                    List<Map<String, Object>> clean_map = new ArrayList<Map<String, Object>>();
+                    final List<Map<String, Object>> clean_map = new ArrayList<Map<String, Object>>();
 
-                    for (Map<String, Object> e : derivative_map) {
+                    for (final Map<String, Object> e : derivative_map) {
                         if (dsidSet.contains(e.get("destination_dsid"))) {
                             e.remove("weight");
                             e.remove("function");
@@ -301,13 +301,13 @@ public class ImageRoutes extends RouteBuilder {
                         }
                     }
                     try {
-                        String map = mapper.writeValueAsString(clean_map);
+                        final String map = mapper.writeValueAsString(clean_map);
                         LOGGER.trace("map is ({})", map);
-                        String outputJson = String.format("{ \"pid\": \"%s\", \"derivatives\" : %s }", pid, map);
+                        final String outputJson = String.format("{ \"pid\": \"%s\", \"derivatives\" : %s }", pid, map);
                         exchange.getIn().setBody(outputJson);
                         LOGGER.debug("Outputting message {}", exchange.getIn().getBody(String.class));
                         exchange.getIn().setHeader(CONTENT_TYPE, "application/json");
-                    } catch (JsonProcessingException e) {
+                    } catch (final JsonProcessingException e) {
                         LOGGER.error("Error writing out formatted JSON, {}", e);
                         throw e;
                     }

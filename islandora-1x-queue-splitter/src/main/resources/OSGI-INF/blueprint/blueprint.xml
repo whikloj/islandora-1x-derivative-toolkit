@@ -4,10 +4,11 @@
        xmlns:cm="http://aries.apache.org/blueprint/xmlns/blueprint-cm/v1.1.0"
        xsi:schemaLocation="
        http://www.osgi.org/xmlns/blueprint/v1.0.0 http://www.osgi.org/xmlns/blueprint/v1.0.0/blueprint.xsd
+       http://aries.apache.org/blueprint/xmlns/blueprint-cm/v1.1.0 http://aries.apache.org/schemas/blueprint-cm/blueprint-cm-1.1.0.xsd
        http://camel.apache.org/schema/blueprint http://camel.apache.org/schema/blueprint/camel-blueprint.xsd">
 
   <!-- OSGI blueprint property placeholder -->
-  <cm:property-placeholder id="properties" persistent-id="ca.umanitoba.dam.islandora.derivatives.queuesplitter" update-strategy="reload" >
+  <cm:property-placeholder id="derivative-queuesplitter-properties" persistent-id="ca.umanitoba.dam.islandora.derivatives.queuesplitter" update-strategy="reload" >
     <cm:default-properties>
       <cm:property name="jms.brokerUrl" value="tcp://127.0.0.1:61616" />
       <cm:property name="input.queue" value="activemq:queue:input"/>
