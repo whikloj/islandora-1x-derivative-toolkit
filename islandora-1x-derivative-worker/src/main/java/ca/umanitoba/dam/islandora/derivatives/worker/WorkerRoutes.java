@@ -87,7 +87,7 @@ public class WorkerRoutes extends RouteBuilder {
                     .log(DEBUG, LOGGER, "split result is ${body}")
                     .process(exchange -> {
                         @SuppressWarnings("unchecked")
-                        HashMap<String, Object> props = exchange.getIn().getBody(HashMap.class);
+                        final HashMap<String, Object> props = exchange.getIn().getBody(HashMap.class);
                         exchange.getIn().setHeaders(props);
                         exchange.getIn().setBody("", String.class);
                 })
@@ -130,7 +130,7 @@ public class WorkerRoutes extends RouteBuilder {
             .setProperty("source_dsid").constant("OBJ")
             .setProperty("destination_dsid").constant("HOCR")
             .removeHeader(TESS_OPTS_HEADER)
-            .setHeader(TESS_OPTS_HEADER).constant("hocr")
+            .setHeader(TESS_OPTS_HEADER).constant("-c tessedit_create_hocr=1 -c tessedit_create_txt=0")
             .to("direct:doTesseract")
             .setHeader(FEDORA_DS_LABEL, constant("HOCR datastream"))
             .to("direct:putDSID");
@@ -223,7 +223,11 @@ public class WorkerRoutes extends RouteBuilder {
                 .maximumRedeliveries(10)
                 .maximumRedeliveryDelay(30000))
             .streamCaching()
-            .setProperty("FileHolder", body())
+                .process(exchange -> {
+                    final String output = exchange.getIn().getBody(String.class);
+                    exchange.setProperty("FileHolder", output);
+                })
+                // .setProperty("FileHolder", body())
             .setHeader(HTTP_URI,
                 simple("{{fedora.url}}/objects/${property[pid]}/datastreams/${property[destination_dsid]}"))
             .setHeader(HTTP_METHOD).constant("HEAD")
@@ -273,6 +277,7 @@ public class WorkerRoutes extends RouteBuilder {
                     final StringEntity entity = new StringEntity(
                         stream,
                         ContentType.create(exchange.getIn().getHeader(CONTENT_TYPE, String.class), Consts.UTF_8));
+                    entity.setContentType(outputMime);
                     exchange.getIn().setBody(entity);
             })
             .removeProperty("FileHolder")
