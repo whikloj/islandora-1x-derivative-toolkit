@@ -14,6 +14,7 @@
       <cm:property name="concurrent.consumers" value="1"/>
       <cm:property name="jms.brokerUrl" value="tcp://127.0.0.1:61616"/>
       <cm:property name="input.queue" value="activemq:queue:derivatives"/>
+      <cm:property name="jms.prefetchSize" value="1"/>
 
       <cm:property name="fedora.url" value="http://localhost:8080/fedora"/>
       <cm:property name="fedora.authUsername" value="fedoraAdmin"/>

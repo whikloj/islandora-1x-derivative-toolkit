@@ -24,6 +24,7 @@ import java.util.stream.Collectors;
 
 import org.apache.camel.Exchange;
 import org.apache.camel.ExchangePattern;
+import org.apache.camel.PropertyInject;
 import org.apache.camel.RuntimeCamelException;
 import org.apache.camel.builder.RouteBuilder;
 import org.apache.http.Consts;
@@ -45,6 +46,9 @@ public class WorkerRoutes extends RouteBuilder {
 
     private static final String FEDORA_DS_LABEL = "UmlFedoraDsLabel";
 
+    @PropertyInject("jms.prefetchSize")
+    private String prefetchSize;
+
     private HashMap<String, String> destinationContentType;
 
     @Override
@@ -52,6 +56,9 @@ public class WorkerRoutes extends RouteBuilder {
         destinationContentType = new HashMap<String, String>();
         destinationContentType.put("OCR", "text/plain");
         destinationContentType.put("HOCR", "application/xml");
+
+        final String activemq_options = (Integer.valueOf(prefetchSize) > 0 ? "?destination.consumer.prefetchSize=" +
+                prefetchSize : "");
 
         // Error/Redelivery handler
         onException(Exception.class)
@@ -63,7 +70,7 @@ public class WorkerRoutes extends RouteBuilder {
         /**
          * Queue subscriber.
          */
-        from("{{input.queue}}")
+        from("{{input.queue}}" + activemq_options)
             .routeId("UmlDerivativeWorkerMain")
             .setProperty("pid").jsonpath("$.pid")
             .log(DEBUG, LOGGER, "Processing pid ${headers.pid}")
