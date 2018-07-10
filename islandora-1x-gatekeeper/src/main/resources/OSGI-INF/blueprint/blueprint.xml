@@ -35,7 +35,7 @@
 
   <bean id="gatekeeperPooledConnectionFactory"
      class="org.apache.activemq.pool.PooledConnectionFactory" init-method="start" destroy-method="stop">
-    <property name="maxConnections" value="8" />
+    <property name="maxConnections" value="10" />
     <property name="connectionFactory" ref="gatekeeperJmsConnectionFactory" />
   </bean>
 
@@ -44,7 +44,7 @@
     <property name="concurrentConsumers" value="${concurrent.consumers}"/>
   </bean>
 
-  <bean id="activemq-gate" class="org.apache.activemq.camel.component.ActiveMQComponent">
+  <bean id="activemq" class="org.apache.activemq.camel.component.ActiveMQComponent">
     <property name="configuration" ref="gatekeeperJmsConfig"/>
     <!-- <property name="connectionFactory" ref="jmsConnectionFactory"/> -->
   </bean>
