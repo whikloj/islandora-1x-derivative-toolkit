@@ -168,7 +168,19 @@ public class ImageRoutes extends RouteBuilder {
             .choice()
                 .when(and(or(header(HTTP_RESPONSE_CODE).isEqualTo(403), header(HTTP_RESPONSE_CODE).isEqualTo(401)),
                 exchangeProperty("loginCompleted").isEqualTo(true)))
-                    .log(ERROR, LOGGER, "Can't get information for ${property[PID]} from Islandora.")
+                .log(ERROR, LOGGER,
+                        "Can't get information for ${property[PID]} from Islandora, got ${header[CamelHttpResponseCode]}: ${header[CamelHttpResponseText]}.")
+                .process(new Processor() {
+
+                    @Override
+                    public void process(final Exchange exchange) throws Exception {
+                        LOGGER.error("Shutting down route due to unknown Islandora response.");
+                        exchange.getContext().getShutdownStrategy().setLogInflightExchangesOnTimeout(false);
+                        exchange.getContext().getShutdownStrategy().setTimeout(60);
+                        exchange.getContext().stop();
+                    }
+
+                })
                     .stop()
                 .when(and(or(header(HTTP_RESPONSE_CODE).isEqualTo(403), header(HTTP_RESPONSE_CODE).isEqualTo(401)),
                 exchangeProperty("loginCompleted").isNull()))
@@ -180,6 +192,17 @@ public class ImageRoutes extends RouteBuilder {
                     .stop()
                 .when(header(HTTP_RESPONSE_CODE).not().isEqualTo(200))
                     .log(ERROR, LOGGER, "Unexpected response from Islandora, ${header[CamelHttpResponseCode]}: ${header[CamelHttpResponseText]}")
+                .process(new Processor() {
+
+                    @Override
+                    public void process(final Exchange exchange) throws Exception {
+                        LOGGER.error("Shutting down route due to unknown Islandora response.");
+                        exchange.getContext().getShutdownStrategy().setLogInflightExchangesOnTimeout(false);
+                        exchange.getContext().getShutdownStrategy().setTimeout(60);
+                        exchange.getContext().stop();
+                    }
+
+                })
                     .stop()
             .end();
 
@@ -244,7 +267,18 @@ public class ImageRoutes extends RouteBuilder {
             .otherwise()
                 .log(ERROR, LOGGER,
                 "Could not login to Islandora, received a (${header[CamelHttpResponseCode]})")
-                 .stop();
+                .process(new Processor() {
+
+                    @Override
+                    public void process(final Exchange exchange) throws Exception {
+                        LOGGER.error("Shutting down route due to unknown Islandora response.");
+                        exchange.getContext().getShutdownStrategy().setLogInflightExchangesOnTimeout(false);
+                        exchange.getContext().getShutdownStrategy().setTimeout(60);
+                        exchange.getContext().stop();
+                    }
+
+                })
+                .stop();
 
         /**
          * Get a X-CSRF-Token
