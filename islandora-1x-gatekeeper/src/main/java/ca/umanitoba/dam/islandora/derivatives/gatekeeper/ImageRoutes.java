@@ -28,6 +28,7 @@ import org.apache.camel.Predicate;
 import org.apache.camel.Processor;
 import org.apache.camel.PropertyInject;
 import org.apache.camel.builder.RouteBuilder;
+import org.apache.http.HttpException;
 import org.slf4j.Logger;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
@@ -49,6 +50,8 @@ public class ImageRoutes extends RouteBuilder {
     private static final String SESSION_TOKEN = "DrupalSessionToken";
 
     private static final String SESSION_COOKIE = "DrupalSessionCookie";
+    
+    private static final String ONCE_404 = "IslandoraGatekeeper404Once";
 
     private final ObjectMapper mapper = new ObjectMapper();
 
@@ -187,8 +190,14 @@ public class ImageRoutes extends RouteBuilder {
                     .log(DEBUG, LOGGER, "Got a ${header[CamelHttpResponseCode]}, logging into Islandora")
                     .to("direct:drupalLogin")
                     .to("direct:getObjectInfo")
-                .when(header(HTTP_RESPONSE_CODE).isEqualTo(404))
-                    .log(WARN, LOGGER, "Object ${property[PID]} was not found in Islandora, received a ${header[CamelHttpResponseCode]}")
+                    .endChoice()
+                .when(and(header(HTTP_RESPONSE_CODE).isEqualTo(404), header(ONCE_404).isNull()))
+                    .log(WARN, LOGGER, "Object ${property[PID]} was not found in Islandora, received a ${header[CamelHttpResponseCode]}. First attempt waiting incase of XACML issue.")
+                    .delay(60000)
+                    .to("direct:getObjectInfo")
+                    .endChoice()
+                .when(and(header(HTTP_RESPONSE_CODE).isEqualTo(404), header(ONCE_404).isNotNull()))
+                    .log(WARN, LOGGER, "Object ${property[PID]} was not found in Islandora, received a ${header[CamelHttpResponseCode]}. Second attempt stopping...")
                     .stop()
                 .when(header(HTTP_RESPONSE_CODE).not().isEqualTo(200))
                     .log(ERROR, LOGGER, "Unexpected response from Islandora, ${header[CamelHttpResponseCode]}: ${header[CamelHttpResponseText]}")
