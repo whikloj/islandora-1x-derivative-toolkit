@@ -21,6 +21,9 @@
       <cm:property name="fedora.authPassword" value="fedoraAdmin"/>
       
       <cm:property name="tesseract.path" value="/usr/bin/tesseract"/>
+      <cm:property name="convert.path" value="/usr/bin/convert" />
+      
+      <cm:property name="temporary.directory" value="/tmp" />
     </cm:default-properties>
   </cm:property-placeholder>
 
