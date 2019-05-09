@@ -1,6 +1,5 @@
 package ca.umanitoba.dam.islandora.derivatives.worker;
 
-import static org.apache.camel.Exchange.ACCEPT_CONTENT_TYPE;
 import static org.apache.camel.Exchange.CONTENT_TYPE;
 import static org.apache.camel.Exchange.HTTP_METHOD;
 import static org.apache.camel.Exchange.HTTP_RESPONSE_CODE;
@@ -225,7 +224,7 @@ public class WorkerRoutes extends RouteBuilder {
                 .maximumRedeliveryDelay(30000))
             .streamCaching()
             .removeHeaders("CamelHttp*")
-            .removeHeader(ACCEPT_CONTENT_TYPE)
+                .removeHeader("Accept")
             .setHeader(HTTP_URI,
                 simple("{{fedora.url}}/objects/${property[pid]}/datastreams/${property[source_dsid]}/content"))
             .setHeader(HTTP_METHOD).constant("HEAD")
@@ -256,7 +255,7 @@ public class WorkerRoutes extends RouteBuilder {
             .to("http4://localhost?authUsername={{fedora.authUsername}}" +
                 "&authPassword={{fedora.authPassword}}&throwExceptionOnFailure=false")
             .to("log:ca.umanitoba.dam.islandora.derivatives.worker?level=TRACE&showHeaders=true&showBody=false")
-            .setHeader(FILE_NAME, simple("${property[pid]}.replace(':', '_'"))
+            .setHeader(FILE_NAME).javaScript("${property[pid]}.replace(':', '_'")
             .setHeader(HEADER_FILENAME).header(FILE_NAME)
             .to("file:{{temporary.directory}}");
 

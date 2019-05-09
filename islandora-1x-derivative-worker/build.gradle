@@ -13,6 +13,8 @@ dependencies {
     compile group: 'org.apache.camel', name: 'camel-jsonpath', version: versions.camel
     compile group: 'org.apache.camel', name: 'camel-http4', version: versions.camel
     compile group: 'org.apache.camel', name: 'camel-exec', version: versions.camel
+    compile group: 'org.apache.camel', name: 'camel-script', version: versions.camel
+    compile group: 'javax.xml.bind', name: 'jaxb-api', version: versions.javaxXmlBind
     compile group: 'com.fasterxml.jackson.core', name: 'jackson-databind', version: versions.jackson
     compile group: 'org.slf4j', name: 'slf4j-api', version: versions.slf4j
     

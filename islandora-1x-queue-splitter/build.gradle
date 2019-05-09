@@ -13,6 +13,7 @@ dependencies {
 	compile group: 'org.apache.camel', name: 'camel-blueprint', version: versions.camel
 	compile group: 'org.apache.camel', name: 'camel-jms', version: versions.camel
 	compile group: 'org.slf4j', name: 'slf4j-api', version: versions.slf4j
+	compile group: 'javax.xml.bind', name: 'jaxb-api', version: versions.javaxXmlBind
 	compile group: 'commons-io', name: 'commons-io', version: versions.apacheCommons
 
 	testCompile group: 'org.apache.camel', name: 'camel-test-blueprint', version: versions.camel

@@ -32,6 +32,7 @@
   	<feature version="${versions.camelRange}">camel-jsonpath</feature>
   	<feature version="${versions.camelRange}">camel-http4</feature>
   	<feature version="${versions.camelRange}">camel-exec</feature>
+  	<feature version="${versions.camelRange}">camel-script</feature>
   	<feature version="${versions.activemqRange}">activemq-camel</feature>
     <bundle dependency="true">mvn:commons-io/commons-io/${versions.apacheCommons}</bundle>
     <bundle dependency="true">mvn:org.apache.httpcomponents/httpclient-osgi/${versions.httpclient}</bundle>

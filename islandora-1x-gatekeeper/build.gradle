@@ -23,6 +23,7 @@ dependencies {
 	compile group: 'org.apache.httpcomponents', name: 'httpclient-osgi', version: versions.httpclient
 	compile group: 'org.apache.httpcomponents', name: 'httpcore-osgi', version: versions.httpcore
 	compile group: 'com.fasterxml.jackson.core', name: 'jackson-databind', version: versions.jackson
+	compile group: 'javax.xml.bind', name: 'jaxb-api', version: versions.javaxXmlBind
 	compile group: 'commons-io', name: 'commons-io', version: versions.apacheCommons
 
 	testCompile group: 'org.apache.camel', name: 'camel-test-blueprint', version: versions.camel
