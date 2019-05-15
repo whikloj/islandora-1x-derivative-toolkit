@@ -35,7 +35,7 @@ subprojects {
     	versions = [
     		camel : '2.21.0',
     		camelRange : '[2.21.0, 3)',
-    		activemq : '5.15',
+            activemq : '5.15.0',
     		activemqRange : '[5.15, 6)',
     		slf4j : '1.7.18',
     		osgi : '1.5.0',
