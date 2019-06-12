@@ -42,6 +42,7 @@
     <bundle dependency="true">mvn:com.fasterxml.jackson.core/jackson-core/${versions.jackson}</bundle>
     <bundle dependency="true">mvn:com.fasterxml.jackson.core/jackson-annotations/${versions.jackson}</bundle>
 	<bundle dependency="true">mvn:com.fasterxml.jackson.core/jackson-databind/${versions.jackson}</bundle>
+	<bundle dependency="true">mvn:org.ow2.asm/asm-commons/${versions.asmCommons}</bundle>
   	<bundle>mvn:ca.umanitoba.dam.islandora.derivatives/islandora-1x-derivative-worker/${project.version}</bundle>
   	
   	<configfile finalname="/etc/ca.umanitoba.dam.islandora.derivatives.worker.cfg">mvn:ca.umanitoba.dam.islandora.derivatives/islandora-1x-derivative-worker/${project.version}/cfg/configuration</configfile>

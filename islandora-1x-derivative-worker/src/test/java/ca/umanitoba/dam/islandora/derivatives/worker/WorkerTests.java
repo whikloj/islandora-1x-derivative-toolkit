@@ -50,14 +50,11 @@ public class WorkerTests extends CamelBlueprintTestSupport {
                 public void configure() throws Exception {
                     replaceFromWith("direct:start");
                     mockEndpointsAndSkip("direct:getSourceFile");
-                        mockEndpointsAndSkip("direct:generateBoth");
-                        mockEndpointsAndSkip("direct:generateOCR");
-                        mockEndpointsAndSkip("direct:generateHOCR");
+                    mockEndpointsAndSkip("direct:generate*");
                 }
             });
 
         context.start();
-        LOGGER.debug("Status is {}", context.getStatus());
 
         final String bodyJson = IOUtils.toString(loadResourceAsStream("test_hocr_ocr_input.json"), "UTF-8");
 
@@ -87,7 +84,6 @@ public class WorkerTests extends CamelBlueprintTestSupport {
             });
 
         context.start();
-        LOGGER.debug("Status is {}", context.getStatus());
 
         final String bodyJson = IOUtils.toString(loadResourceAsStream("test_hocr_input.json"), "UTF-8");
 
@@ -117,7 +113,6 @@ public class WorkerTests extends CamelBlueprintTestSupport {
             });
 
         context.start();
-        LOGGER.debug("Status is {}", context.getStatus());
 
         final String bodyJson = IOUtils.toString(loadResourceAsStream("test_TN_input.json"), "UTF-8");
 
