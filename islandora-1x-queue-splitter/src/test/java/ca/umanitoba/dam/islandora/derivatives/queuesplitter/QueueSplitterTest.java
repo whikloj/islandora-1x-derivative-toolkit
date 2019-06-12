@@ -42,8 +42,9 @@ public class QueueSplitterTest extends CamelBlueprintTestSupport {
 
                 @Override
                 public void configure() throws Exception {
-                    replaceFromWith("direct:start");
-                    mockEndpointsAndSkip("direct:output*");
+                        replaceFromWith("direct:start");
+                        mockEndpointsAndSkip("direct:outputA");
+                        mockEndpointsAndSkip("direct:outputB");
                 }
             });
 

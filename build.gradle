@@ -33,10 +33,10 @@ subprojects {
     	license = "MIT"
     	buildName = "islandora-1x-derivative-toolkit"
     	versions = [
-    		camel : '2.21.0',
-    		camelRange : '[2.21.0, 3)',
-            activemq : '5.15.0',
-    		activemqRange : '[5.15, 6)',
+    		camel : '2.23.0',
+    		camelRange : '[2.23.0, 3)',
+            activemq : '5.15.5',
+    		activemqRange : '[5.15.5, 6)',
     		slf4j : '1.7.18',
     		osgi : '1.5.0',
     		jackson : '2.9.5',

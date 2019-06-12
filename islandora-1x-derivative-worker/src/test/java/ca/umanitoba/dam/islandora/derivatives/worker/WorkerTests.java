@@ -50,15 +50,16 @@ public class WorkerTests extends CamelBlueprintTestSupport {
                 public void configure() throws Exception {
                     replaceFromWith("direct:start");
                     mockEndpointsAndSkip("direct:getSourceFile");
-                    mockEndpointsAndSkip("direct:generate*");
-
+                        mockEndpointsAndSkip("direct:generateBoth");
+                        mockEndpointsAndSkip("direct:generateOCR");
+                        mockEndpointsAndSkip("direct:generateHOCR");
                 }
             });
 
         context.start();
         LOGGER.debug("Status is {}", context.getStatus());
 
-        String bodyJson = IOUtils.toString(loadResourceAsStream("test_hocr_ocr_input.json"), "UTF-8");
+        final String bodyJson = IOUtils.toString(loadResourceAsStream("test_hocr_ocr_input.json"), "UTF-8");
 
         getMockEndpoint("mock:direct:generateOCR").expectedMessageCount(0);
         getMockEndpoint("mock:direct:generateHOCR").expectedMessageCount(0);
@@ -88,7 +89,7 @@ public class WorkerTests extends CamelBlueprintTestSupport {
         context.start();
         LOGGER.debug("Status is {}", context.getStatus());
 
-        String bodyJson = IOUtils.toString(loadResourceAsStream("test_hocr_input.json"), "UTF-8");
+        final String bodyJson = IOUtils.toString(loadResourceAsStream("test_hocr_input.json"), "UTF-8");
 
         getMockEndpoint("mock:direct:generateOCR").expectedMessageCount(0);
         getMockEndpoint("mock:direct:generateHOCR").expectedMessageCount(1);
@@ -118,7 +119,7 @@ public class WorkerTests extends CamelBlueprintTestSupport {
         context.start();
         LOGGER.debug("Status is {}", context.getStatus());
 
-        String bodyJson = IOUtils.toString(loadResourceAsStream("test_TN_input.json"), "UTF-8");
+        final String bodyJson = IOUtils.toString(loadResourceAsStream("test_TN_input.json"), "UTF-8");
 
         getMockEndpoint("mock:direct:generateOCR").expectedMessageCount(0);
         getMockEndpoint("mock:direct:generateHOCR").expectedMessageCount(0);
