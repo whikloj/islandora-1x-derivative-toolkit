@@ -17,11 +17,10 @@ dependencies {
     compile group: 'javax.xml.bind', name: 'jaxb-api', version: versions.javaxXmlBind
     compile group: 'com.fasterxml.jackson.core', name: 'jackson-databind', version: versions.jackson
     compile group: 'org.slf4j', name: 'slf4j-api', version: versions.slf4j
-    
+    runtime group: 'org.ow2.asm', name: 'asm-commons', version: versions.asmCommons
+
     testCompile group: 'org.apache.camel', name: 'camel-test-blueprint', version: versions.camel
-    testCompile group: 'org.ow2.asm', name: 'asm-commons', version: versions.asmCommons
-	testCompile group: 'org.apache.aries.blueprint', name: 'org.apache.aries.blueprint', version: '1.1.0'
-	testRuntime group: 'org.slf4j', name: 'slf4j-log4j12', version: versions.slf4j
+    testRuntime group: 'org.slf4j', name: 'slf4j-log4j12', version: versions.slf4j
 }
 
 artifacts {
