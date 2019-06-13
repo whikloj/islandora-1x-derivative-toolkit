@@ -253,7 +253,7 @@ public class WorkerRoutes extends RouteBuilder {
                 .maximumRedeliveryDelay(30000))
             .streamCaching()
             .removeHeaders("CamelHttp*")
-                .removeHeader("Accept")
+            .removeHeader("Accept")
             .setHeader(HTTP_URI,
                 simple("{{fedora.url}}/objects/${property[pid]}/datastreams/${property[source_dsid]}/content"))
             .setHeader(HTTP_METHOD).constant("HEAD")
@@ -365,9 +365,6 @@ public class WorkerRoutes extends RouteBuilder {
                     uploadFile,
                     ContentType.create(outputMime, Consts.UTF_8)
                 );
-                //final StringEntity entity = new StringEntity(
-                //    stream,
-                //    ContentType.create(exchange.getIn().getHeader(CONTENT_TYPE, String.class), Consts.UTF_8));
                 entity.setContentType(outputMime);
                 exchange.getIn().setBody(entity);
             })
@@ -382,9 +379,9 @@ public class WorkerRoutes extends RouteBuilder {
             .otherwise()
                 .log(ERROR, LOGGER, "Did not publish dsid ${property[destination_dsid]} on item ${property[pid]}")
             .end()
-                .setHeader(EXEC_COMMAND_WORKING_DIR).simple("{{temporary.directory}}")
-                .setHeader(EXEC_COMMAND_ARGS).exchangeProperty(HEADER_PROCESS_FILE)
-                .to("exec:rm");
+            .setHeader(EXEC_COMMAND_WORKING_DIR).simple("{{temporary.directory}}")
+            .setHeader(EXEC_COMMAND_ARGS).exchangeProperty(HEADER_PROCESS_FILE)
+            .to("exec:rm");
 
     }
 
