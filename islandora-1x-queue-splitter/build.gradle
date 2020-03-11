@@ -13,10 +13,11 @@ dependencies {
 	compile group: 'org.apache.camel', name: 'camel-blueprint', version: versions.camel
 	compile group: 'org.apache.camel', name: 'camel-jms', version: versions.camel
 	compile group: 'org.slf4j', name: 'slf4j-api', version: versions.slf4j
+	compile group: 'javax.xml.bind', name: 'jaxb-api', version: versions.javaxXmlBind
 	compile group: 'commons-io', name: 'commons-io', version: versions.apacheCommons
 
 	testCompile group: 'org.apache.camel', name: 'camel-test-blueprint', version: versions.camel
-  	testCompile group: 'org.slf4j', name: 'slf4j-log4j12', version: versions.slf4j
+  	testRuntime group: 'org.slf4j', name: 'slf4j-log4j12', version: versions.slf4j
 	testCompile group: 'org.mockito', name: 'mockito-all', version: versions.mockito
 	testCompile group: 'org.ow2.asm', name: 'asm-commons', version: versions.asmCommons
 	testCompile group: 'org.apache.aries.blueprint', name: 'org.apache.aries.blueprint', version: '1.1.0'
@@ -58,14 +59,12 @@ sourceSets {
 }
 
 test {
-	//systemProperties 'logback.configurationFile' : new File(projectDir,'src/test/resources/logback-test.xml').absolutePath
-
     testLogging {
         // Make sure output from
         // standard out or error is shown
         // in Gradle output.
         // showStandardStreams = true
-        events 'standard_out', 'standard_error'
-        exceptionFormat = 'full'
+        //events 'standard_out', 'standard_error'
+        //exceptionFormat = 'full'
     }
 }

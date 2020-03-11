@@ -4,6 +4,7 @@ description = "Process derivatives off the queue"
 
 ext {
 	buildName = "islandora-derivatives-worker"
+	//buildGroup = 'ca.umanitoba.dam.islandora.derivatives.worker'
 }
 
 // In this section you declare the dependencies for your production and test code
@@ -13,12 +14,13 @@ dependencies {
     compile group: 'org.apache.camel', name: 'camel-jsonpath', version: versions.camel
     compile group: 'org.apache.camel', name: 'camel-http4', version: versions.camel
     compile group: 'org.apache.camel', name: 'camel-exec', version: versions.camel
+    compile group: 'javax.xml.bind', name: 'jaxb-api', version: versions.javaxXmlBind
     compile group: 'com.fasterxml.jackson.core', name: 'jackson-databind', version: versions.jackson
     compile group: 'org.slf4j', name: 'slf4j-api', version: versions.slf4j
-    
+    runtime group: 'org.ow2.asm', name: 'asm-commons', version: versions.asmCommons
+
     testCompile group: 'org.apache.camel', name: 'camel-test-blueprint', version: versions.camel
-    testCompile group: 'org.slf4j', name: 'slf4j-log4j12', version: versions.slf4j
-    testCompile group: 'org.ow2.asm', name: 'asm-commons', version: versions.asmCommons
+    testRuntime group: 'org.slf4j', name: 'slf4j-log4j12', version: versions.slf4j
 }
 
 artifacts {

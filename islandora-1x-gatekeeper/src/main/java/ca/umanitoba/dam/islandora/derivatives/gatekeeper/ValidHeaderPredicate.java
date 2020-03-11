@@ -55,7 +55,7 @@ public class ValidHeaderPredicate implements Predicate {
                 LOGGER.debug("return true");
                 return true;
             }
-            String dsID = getDSIDs(inMessage.getBody(Document.class));
+            final String dsID = getDSIDs(inMessage.getBody(Document.class));
             LOGGER.debug("Message has DSID ({})", dsID);
             if ((methodName.equals("addDatastream") || methodName.equals("modifyDatastreamByReference")) &&
                 dsID != null && dsID.equalsIgnoreCase("OBJ")) {
@@ -104,18 +104,17 @@ public class ValidHeaderPredicate implements Predicate {
         }
 
         @Override
-        public String getNamespaceURI(String prefix) {
+        public String getNamespaceURI(final String prefix) {
             return PREF_MAP.get(prefix);
         }
 
         @Override
-        public String getPrefix(String namespaceURI) {
+        public String getPrefix(final String namespaceURI) {
             throw new UnsupportedOperationException();
         }
 
-        @SuppressWarnings("rawtypes")
         @Override
-        public Iterator getPrefixes(String namespaceURI) {
+        public Iterator<String> getPrefixes(final String namespaceURI) {
             throw new UnsupportedOperationException();
         }
 

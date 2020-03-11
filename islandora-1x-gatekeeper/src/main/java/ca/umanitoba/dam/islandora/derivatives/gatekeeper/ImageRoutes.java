@@ -1,6 +1,5 @@
 package ca.umanitoba.dam.islandora.derivatives.gatekeeper;
 
-import static org.apache.camel.Exchange.ACCEPT_CONTENT_TYPE;
 import static org.apache.camel.Exchange.CONTENT_TYPE;
 import static org.apache.camel.Exchange.HTTP_METHOD;
 import static org.apache.camel.Exchange.HTTP_RESPONSE_CODE;
@@ -148,10 +147,10 @@ public class ImageRoutes extends RouteBuilder {
                .end()
 
             .removeHeaders("*")
-            .setHeader("Accept", constant("application/json"))
-            .setHeader(XCSRF_Token, exchangeProperty(SESSION_TOKEN))
-            .setHeader(HTTP_METHOD, constant("GET"))
-            .setHeader(HTTP_URI, simple("{{islandora.hostname}}{{islandora.basepath}}{{islandora.rest.infoUri}}"))
+            .setHeader("Accept").constant("application/json")
+            .setHeader(XCSRF_Token).exchangeProperty(SESSION_TOKEN)
+            .setHeader(HTTP_METHOD).constant("GET")
+            .setHeader(HTTP_URI).simple("{{islandora.hostname}}{{islandora.basepath}}{{islandora.rest.infoUri}}")
             .process(new Processor() {
 
                 @Override
@@ -222,10 +221,10 @@ public class ImageRoutes extends RouteBuilder {
 		  .routeId("UmlDerivativeLogin")
           .log(TRACE, LOGGER, "in drupalLogin")
           .to("direct:getToken")
-          .setHeader(CONTENT_TYPE, constant("application/json"))
-          .setHeader(ACCEPT_CONTENT_TYPE, constant("application/json"))
-          .setHeader(HTTP_METHOD, constant("POST"))
-            .setBody(simple("{ \"username\": \"{{islandora.username}}\", \"password\": \"{{islandora.password}}\"}"))
+          .setHeader(CONTENT_TYPE).constant("application/json")
+          .setHeader("Accept").constant("application/json")
+          .setHeader(HTTP_METHOD).constant("POST")
+          .setBody(simple("{ \"username\": \"{{islandora.username}}\", \"password\": \"{{islandora.password}}\"}"))
           .setHeader(HTTP_URI, simple("{{islandora.hostname}}{{islandora.login.service}}/user/login"))
           .log(DEBUG, LOGGER, "Login to URI ${header[CamelHttpUri]}")
           .to("http4://localhost?throwExceptionOnFailure=false")
@@ -260,8 +259,8 @@ public class ImageRoutes extends RouteBuilder {
                 .log(DEBUG, LOGGER, "Received 406, need to logout first")
                 .removeHeaders("HttpCamel*")
                 .removeProperty("loginComplete")
-                .setHeader(HTTP_METHOD, constant("POST"))
-                .setHeader(HTTP_URI, simple("{{islandora.hostname}}{{islandora.login.service}}/user/logout"))
+                .setHeader(HTTP_METHOD).constant("POST")
+                .setHeader(HTTP_URI).simple("{{islandora.hostname}}{{islandora.login.service}}/user/logout")
                 .to("http4://localhost?throwExceptionOnFailure=true")
                 .to("direct:drupalLogin")
             .otherwise()

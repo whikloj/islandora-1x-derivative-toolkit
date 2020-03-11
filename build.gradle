@@ -33,23 +33,23 @@ subprojects {
     	license = "MIT"
     	buildName = "islandora-1x-derivative-toolkit"
     	versions = [
-    		camel : '2.18.1',
-    		camelRange : '[2.18, 3)',
-    		activemq : '5.14.5',
-    		activemqRange : '[5.14.5, 6)',
-    		slf4j : '1.7.18',
-    		osgi : '1.5.0',
-    		jackson : '2.8.7',
-    		apacheCommons : '2.4',
-    		commonsCodec : '1.10',
-    		httpclient : '4.5.2',
-    		httpclientRange : '[4.5, 5)',
-    		httpcore : '4.4.3',
-    		httpcoreRange : '[4.4, 5)',
-    		springFramework : '3.1.4.RELEASE',
-    		logback : '1.+',
-    		mockito : '1.10.19',
-    		asmCommons : '5.0.3'
+            activemq : '5.15.5',
+            activemqRange : '[5.15.5, 6)',
+            apacheCommons : '2.4',
+            asmCommons : '5.0.4',
+            camel : '2.23.0',
+            camelRange : '[2.23.0, 3)',
+            commonsCodec : '1.10',
+            httpclient : '4.5.2',
+            httpclientRange : '[4.5, 5)',
+            httpcore : '4.4.3',
+            httpcoreRange : '[4.4, 5)',
+            jackson : '2.9.5',
+            javaxXmlBind : '2.4.0-b180725.0427',
+            logback : '1.+',
+            mockito : '1.10.19',
+            osgi : '1.5.0',
+            slf4j : '1.7.18'
     	]
 	
 	    defaultOsgiImports = 'org.osgi.service.blueprint;version="[1,2)",*'

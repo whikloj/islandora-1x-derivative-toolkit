@@ -4,7 +4,7 @@
   <repository>mvn:org.apache.camel.karaf/apache-camel/${versions.camel}/xml/features</repository>
   <repository>mvn:org.apache.activemq/activemq-karaf/${versions.activemq}/xml/features</repository>
 
- <feature name="islandora-1x-gatekeeper" version="${project.version}" start-level="80">
+  <feature name="islandora-1x-gatekeeper" version="${project.version}" start-level="80">
     <details>Determines whether to pass along Islandora Objects based on content-type and datastream IDs</details>
 
     <feature version="${versions.camelRange}">camel</feature>
@@ -18,7 +18,9 @@
     <bundle dependency="true">mvn:org.apache.httpcomponents/httpclient-osgi/${versions.httpclient}</bundle>
     <bundle dependency="true">mvn:org.apache.httpcomponents/httpcore-osgi/${versions.httpcore}</bundle>
     <bundle dependency="true">mvn:org.apache.activemq/activemq-pool/${versions.activemq}</bundle>
-
+    <bundle dependency="true">mvn:com.fasterxml.jackson.core/jackson-core/${versions.jackson}</bundle>
+    <bundle dependency="true">mvn:com.fasterxml.jackson.core/jackson-annotations/${versions.jackson}</bundle>
+    <bundle dependency="true">mvn:com.fasterxml.jackson.core/jackson-databind/${versions.jackson}</bundle>
     <bundle>mvn:ca.umanitoba.dam.islandora.derivatives/islandora-1x-gatekeeper/${project.version}</bundle>
 
     <configfile finalname="/etc/ca.umanitoba.dam.islandora.derivatives.gatekeeper.cfg">mvn:ca.umanitoba.dam.islandora.derivatives/islandora-1x-gatekeeper/${project.version}/cfg/configuration</configfile>
@@ -26,27 +28,30 @@
   </feature>
   
   <feature name="islandora-1x-derivative-worker" version="${project.version}" start-level="80">
-  	<details>Handles messages from Gatekeeper, currently only processes HOCR/OCR requests with Tesseract.</details>
-  	<feature version="${versions.camelRange}">camel</feature>
-  	<feature version="${versions.camelRange}">camel-blueprint</feature>
-  	<feature version="${versions.camelRange}">camel-jsonpath</feature>
-  	<feature version="${versions.camelRange}">camel-http4</feature>
-  	<feature version="${versions.camelRange}">camel-exec</feature>
-  	<feature version="${versions.activemqRange}">activemq-camel</feature>
+    <details>Handles messages from Gatekeeper, currently only processes HOCR/OCR requests with Tesseract.</details>
+    <feature version="${versions.camelRange}">camel</feature>
+    <feature version="${versions.camelRange}">camel-blueprint</feature>
+    <feature version="${versions.camelRange}">camel-jms</feature>
+    <feature version="${versions.camelRange}">camel-jsonpath</feature>
+    <feature version="${versions.camelRange}">camel-http4</feature>
+    <feature version="${versions.camelRange}">camel-exec</feature>
+    <feature version="${versions.activemqRange}">activemq-camel</feature>
     <bundle dependency="true">mvn:commons-io/commons-io/${versions.apacheCommons}</bundle>
     <bundle dependency="true">mvn:org.apache.httpcomponents/httpclient-osgi/${versions.httpclient}</bundle>
     <bundle dependency="true">mvn:org.apache.httpcomponents/httpcore-osgi/${versions.httpcore}</bundle>
     <bundle dependency="true">mvn:org.apache.activemq/activemq-pool/${versions.activemq}</bundle>
+    <bundle dependency="true">mvn:com.fasterxml.jackson.core/jackson-core/${versions.jackson}</bundle>
+    <bundle dependency="true">mvn:com.fasterxml.jackson.core/jackson-annotations/${versions.jackson}</bundle>
+    <bundle dependency="true">mvn:com.fasterxml.jackson.core/jackson-databind/${versions.jackson}</bundle>
+    <bundle>mvn:ca.umanitoba.dam.islandora.derivatives/islandora-1x-derivative-worker/${project.version}</bundle>
 
-  	<bundle>mvn:ca.umanitoba.dam.islandora.derivatives/islandora-1x-derivative-worker/${project.version}</bundle>
-  	
-  	<configfile finalname="/etc/ca.umanitoba.dam.islandora.derivatives.worker.cfg">mvn:ca.umanitoba.dam.islandora.derivatives/islandora-1x-derivative-worker/${project.version}/cfg/configuration</configfile>
+    <configfile finalname="/etc/ca.umanitoba.dam.islandora.derivatives.worker.cfg">mvn:ca.umanitoba.dam.islandora.derivatives/islandora-1x-derivative-worker/${project.version}/cfg/configuration</configfile>
   </feature>
 
- <feature name="islandora-1x-queue-splitter" version="${project.version}" start-level="75">
+  <feature name="islandora-1x-queue-splitter" version="${project.version}" start-level="75">
     <details>Multicasts messages from input queue to 2 or more output queues.</details>
 
-	<feature version="${versions.camelRange}">camel</feature>   
+    <feature version="${versions.camelRange}">camel</feature>
     <feature version="${versions.camelRange}">camel-blueprint</feature>
     <feature version="${versions.camelRange}">camel-jms</feature>
     <feature version="${versions.activemqRange}">activemq-camel</feature>

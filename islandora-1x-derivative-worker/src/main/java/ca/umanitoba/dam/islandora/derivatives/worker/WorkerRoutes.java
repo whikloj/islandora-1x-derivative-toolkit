@@ -1,10 +1,10 @@
 package ca.umanitoba.dam.islandora.derivatives.worker;
 
-import static org.apache.camel.Exchange.ACCEPT_CONTENT_TYPE;
 import static org.apache.camel.Exchange.CONTENT_TYPE;
 import static org.apache.camel.Exchange.HTTP_METHOD;
 import static org.apache.camel.Exchange.HTTP_RESPONSE_CODE;
 import static org.apache.camel.Exchange.HTTP_URI;
+import static org.apache.camel.Exchange.FILE_NAME;
 import static org.apache.camel.LoggingLevel.DEBUG;
 import static org.apache.camel.LoggingLevel.ERROR;
 import static org.apache.camel.LoggingLevel.INFO;
@@ -13,12 +13,16 @@ import static org.apache.camel.builder.PredicateBuilder.and;
 import static org.apache.camel.component.exec.ExecBinding.EXEC_COMMAND_ARGS;
 import static org.apache.camel.component.exec.ExecBinding.EXEC_EXIT_VALUE;
 import static org.apache.camel.component.exec.ExecBinding.EXEC_STDERR;
+import static org.apache.camel.component.exec.ExecBinding.EXEC_COMMAND_WORKING_DIR;
 import static org.slf4j.LoggerFactory.getLogger;
 
+import java.io.File;
+import java.io.FileNotFoundException;
 import java.net.URLEncoder;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -29,7 +33,7 @@ import org.apache.camel.RuntimeCamelException;
 import org.apache.camel.builder.RouteBuilder;
 import org.apache.http.Consts;
 import org.apache.http.entity.ContentType;
-import org.apache.http.entity.StringEntity;
+import org.apache.http.entity.FileEntity;
 import org.slf4j.Logger;
 
 import com.jayway.jsonpath.DocumentContext;
@@ -46,16 +50,38 @@ public class WorkerRoutes extends RouteBuilder {
 
     private static final String FEDORA_DS_LABEL = "UmlFedoraDsLabel";
 
+    private static final String HEADER_FILENAME = "UmlFedoraFileName";
+
+    private static final String HEADER_PROCESS_FILE = "UmlFedoraCurrentFile";
+
     @PropertyInject("jms.prefetchSize")
     private String prefetchSize;
 
-    private HashMap<String, String> destinationContentType;
+    @PropertyInject("temporary.directory")
+    private String temporaryDir;
+
+    /**
+     * Map DSID to content type.
+     */
+    private static final Map<String, String> destinationContentType;
+
+    /**
+     * Map DSID to expected tesseract file extensions.
+     */
+    private static final Map<String, String> outputFileExtensions;
+
+    static {
+        destinationContentType = new HashMap<>();
+        outputFileExtensions = new HashMap<>();
+    }
 
     @Override
     public void configure() throws Exception {
-        destinationContentType = new HashMap<String, String>();
         destinationContentType.put("OCR", "text/plain");
         destinationContentType.put("HOCR", "application/xml");
+
+        outputFileExtensions.put("OCR", "txt");
+        outputFileExtensions.put("HOCR", "hocr");
 
         final String activemq_options = (Integer.valueOf(prefetchSize) > 0 ? "?destination.consumer.prefetchSize=" +
                 prefetchSize : "");
@@ -81,12 +107,12 @@ public class WorkerRoutes extends RouteBuilder {
                     final JSONArray dsids = ctx.read("$.derivatives[*].destination_dsid");
                     final Set<String> destinations = dsids.stream().peek(t -> LOGGER.debug("Peek {}", t))
                         .map(String::valueOf).collect(Collectors.toSet());
-                    LOGGER.trace("ContentType {}", destinationContentType);
+                    LOGGER.debug("ContentType {}", destinationContentType);
                     final Set<String> HocrAndOcr = destinationContentType.keySet();
-                    LOGGER.trace("destinations {}", destinations);
-                    LOGGER.trace("HocrAndOcr {}", HocrAndOcr);
+                    LOGGER.debug("destinations {}", destinations);
+                    LOGGER.debug("HocrAndOcr {}", HocrAndOcr);
                     HocrAndOcr.retainAll(destinations);
-                    LOGGER.trace("returning {}", HocrAndOcr);
+                    LOGGER.debug("returning {}", HocrAndOcr);
                     return (HocrAndOcr.size() == 2);
                 }).to("direct:generateBoth").endChoice()
                 .otherwise()
@@ -114,8 +140,14 @@ public class WorkerRoutes extends RouteBuilder {
         from("direct:generateBoth").routeId("UmlDerivativeWorkerBoth")
             .setProperty("source_dsid").constant("OBJ")
             .to("direct:getSourceFile")
-            .streamCaching()
-            .multicast().to("direct:generateHOCR", "direct:generateOCR");
+            .setHeader(TESS_OPTS_HEADER).constant("-c tessedit_create_hocr=1 -c tessedit_create_txt=1")
+            .to("direct:doTesseract")
+            .setProperty("destination_dsid").constant("OCR")
+            .setHeader(FEDORA_DS_LABEL, constant("OCR datastream"))
+            .to("direct:putDSID")
+            .setProperty("destination_dsid").constant("HOCR")
+            .setHeader(FEDORA_DS_LABEL, constant("HOCR datastream"))
+            .to("direct:putDSID");
 
         /**
          * Do OCR for this resource.
@@ -146,38 +178,69 @@ public class WorkerRoutes extends RouteBuilder {
          * Execute tesseract with the provided parameters.
          */
         from("direct:doTesseract").routeId("UmlDerivativeWorkerTesseract")
+            .to("direct:makeGreyTiff")
+            .to("direct:tesseractProcess")
+            .choice()
+            .when(header(EXEC_EXIT_VALUE).not().isEqualTo(0))
+                .log(ERROR, LOGGER, "Problem creating HOCR from original - ${header." + EXEC_STDERR + "}")
+                .stop()
+            .end()
+            .log(DEBUG, LOGGER, "Deleting the source file after processing.")
+            .setHeader(EXEC_COMMAND_WORKING_DIR, simple("{{temporary.directory}}"))
+            .setHeader(EXEC_COMMAND_ARGS).header(HEADER_FILENAME)
+            .to("exec:rm");
+
+
+        /**
+         * Actually do the processing.
+         */
+        from("direct:tesseractProcess")
+            .setHeader(EXEC_COMMAND_WORKING_DIR, simple("{{temporary.directory}}"))
             .process(exchange -> {
+                final String filename = exchange.getIn().getHeader(HEADER_FILENAME, String.class);
                 final String cmdOptions = cleanTesseractOptions(exchange);
                 LOGGER.debug("Additional Tesseract options are ({})", cmdOptions);
-                exchange.getIn().setHeader(EXEC_COMMAND_ARGS, " stdin stdout " + cmdOptions);
+                final String arguments = filename + " " + filename + " " + cmdOptions;
+                exchange.getIn().setHeader(EXEC_COMMAND_ARGS, arguments);
             })
             .removeHeaders("CamelHttp*")
-            .to("exec:{{tesseract.path}}")
-            .filter(header(EXEC_EXIT_VALUE).not().isEqualTo(0))
-            .log(ERROR, "Problem creating HOCR - ${header." + EXEC_STDERR + "}")
-            // .to("direct:makeGreyTiff")
-            // .to("direct:OcrFromGray")
-            // .removeHeaders("*")
-            // .setHeader(EXEC_COMMAND_WORKING_DIR, simple("${property.workingDir}"))
-            // .setBody(constant(null))
-            // .setHeader(EXEC_COMMAND_ARGS, simple(" ${property.workingDir}/OBJ_gray.tiff"))
-            // .to("exec:/bin/rm")
+            .to("exec:{{tesseract.path}}");
+
+        /**
+         * Make a Greyscale version of the Tiff without an alpha channel.
+         */
+        from("direct:makeGreyTiff")
+            .description("Make a greyscale Tiff for Tesseract")
+            .log(DEBUG, "Making a Tiff greyscale for ${property[PID]}")
+            .setBody(constant(null))
+            .setHeader(EXEC_COMMAND_WORKING_DIR).simple("{{temporary.directory}}")
+            .setHeader(EXEC_COMMAND_ARGS, simple("${header." + HEADER_FILENAME +
+                        "} -alpha Off -set colorspace Gray ${header." + HEADER_FILENAME + "}_2"))
+            .to("exec:{{convert.path}}")
+            .choice()
+                .when(header(EXEC_EXIT_VALUE).not().isEqualTo(0))
+                    .log(ERROR, LOGGER, "Problem creating Greyscale Tiff - ${header." + EXEC_STDERR + "}")
+                    .stop()
+            .end()
+            .to("direct:replaceOldWithGreyscale")
+            .choice()
+            .when(header(EXEC_EXIT_VALUE).not().isEqualTo(0))
+                .log(ERROR, LOGGER, "Problem with tesseract and greyscale image - ${header." + EXEC_STDERR + "}")
+                .stop()
             .end();
 
         /**
-         * Make a Greyscale version of the Tiff TODO: See if this is needed and if so, how to use in a streaming sense.
+         * Move the greyscale non-alpha image over the original one.
          */
-        // from("direct:makeGreyTiff")
-        // .description("Make a greyscale Tiff for Tesseract")
-        // .log(DEBUG, "Making a Tiff greyscale for ${property[PID]}")
-        // .removeHeaders("*")
-        // .setHeader(EXEC_COMMAND_WORKING_DIR, simple("${property.workingDir}"))
-        // .setBody(constant(null))
-        // .setHeader(EXEC_COMMAND_ARGS,
-        // simple("${property.tiffFile} -colorspace gray -quality 100 ${property.workingDir}/OBJ_gray.tiff"))
-        // .to("exec:{{apps.convert}}")
-        // .filter(header(EXEC_EXIT_VALUE).not().isEqualTo(0))
-        // .log(ERROR, "Problem creating Greyscale Tiff - ${header." + EXEC_STDERR + "}");
+        from("direct:replaceOldWithGreyscale")
+            .setHeader(EXEC_COMMAND_WORKING_DIR).simple("{{temporary.directory}}")
+            .setHeader(EXEC_COMMAND_ARGS, simple("${header." + HEADER_FILENAME + "}_2 ${header." +
+                        HEADER_FILENAME + "}"))
+            .to("exec:mv")
+            .filter(header(EXEC_EXIT_VALUE).not().isEqualTo(0))
+                .log(ERROR, LOGGER, "Problem moving greyscale tiff over original - ${header." + EXEC_STDERR + "}")
+                .stop()
+            .end();
 
         /**
          * Get the source file from Fedora.
@@ -190,7 +253,7 @@ public class WorkerRoutes extends RouteBuilder {
                 .maximumRedeliveryDelay(30000))
             .streamCaching()
             .removeHeaders("CamelHttp*")
-            .removeHeader(ACCEPT_CONTENT_TYPE)
+            .removeHeader("Accept")
             .setHeader(HTTP_URI,
                 simple("{{fedora.url}}/objects/${property[pid]}/datastreams/${property[source_dsid]}/content"))
             .setHeader(HTTP_METHOD).constant("HEAD")
@@ -199,7 +262,7 @@ public class WorkerRoutes extends RouteBuilder {
             .to("log:ca.umanitoba.dam.islandora.derivatives.worker?level=TRACE&showHeaders=true")
             .choice()
                 .when(and(header(HTTP_RESPONSE_CODE).isEqualTo(200),header(CONTENT_TYPE).startsWith("image/")))
-                    .log(INFO, LOGGER, "Image Processing ${headers[CamelHttpPath]}")
+                .log(INFO, LOGGER, "Image Processing ${headers[CamelHttpUri]}")
                     .to("direct:doDownload")
                 .otherwise()
                     .log(WARN, LOGGER, "Cannot process an item with Content-Type ${header[Content-Type]}")
@@ -212,6 +275,9 @@ public class WorkerRoutes extends RouteBuilder {
             .end();
 
 
+        /**
+         * Download the file.
+         */
         from("direct:doDownload")
             .routeId("UmlDerivativeWorkerGetSource")
             .removeHeaders("CamelHttp*")
@@ -220,9 +286,16 @@ public class WorkerRoutes extends RouteBuilder {
             .setHeader(HTTP_METHOD).constant("GET")
             .to("http4://localhost?authUsername={{fedora.authUsername}}" +
                 "&authPassword={{fedora.authPassword}}&throwExceptionOnFailure=false")
-            .to("log:ca.umanitoba.dam.islandora.derivatives.worker?level=TRACE&showHeaders=true&showBody=false");
+                .streamCaching()
+            .to("log:ca.umanitoba.dam.islandora.derivatives.worker?level=TRACE&showHeaders=true&showBody=false")
+                .convertBodyTo(byte[].class, "utf-8")
+                .setHeader(FILE_NAME).simple("${property.pid.replace(':', '_')}")
+            .setHeader(HEADER_FILENAME).header(FILE_NAME)
+                .to("file:{{temporary.directory}}");
 
-
+        /**
+         * Upload the file.
+         */
         from("direct:putDSID")
             .routeId("UmlDerivativeWorkerUpload")
             .errorHandler(deadLetterChannel("direct:failedUpload")
@@ -230,29 +303,29 @@ public class WorkerRoutes extends RouteBuilder {
                 .maximumRedeliveries(10)
                 .maximumRedeliveryDelay(30000))
             .streamCaching()
-                .process(exchange -> {
-                    final String output = exchange.getIn().getBody(String.class);
-                    exchange.setProperty("FileHolder", output);
-                })
-                // .setProperty("FileHolder", body())
+            .setBody().constant("")
             .setHeader(HTTP_URI,
                 simple("{{fedora.url}}/objects/${property[pid]}/datastreams/${property[destination_dsid]}"))
             .setHeader(HTTP_METHOD).constant("HEAD")
+            .log(DEBUG, LOGGER, "Doing head request against ${header." + HTTP_URI + "}")
             .to("http4://localhost?authUsername={{fedora.authUsername}}" +
                 "&authPassword={{fedora.authPassword}}&throwExceptionOnFailure=false")
             .to("log:ca.umanitoba.dam.islandora.derivatives.worker?level=TRACE&showHeaders=true")
             .choice()
                 .when(header(HTTP_RESPONSE_CODE).isEqualTo(401))
                     .log(ERROR, LOGGER, "Received a 401 Unauthorized on HEAD request to ${headers[CamelHttpUri]}")
-                    .throwException(RuntimeCamelException.class, "Received 401 response on HEAD request")
+                    .stop()
+                    .endChoice()
                 .when(header(HTTP_RESPONSE_CODE).isEqualTo(200))
+                    .log(DEBUG, LOGGER, "HEAD returned 200 OK, performing PUT to replace.")
                     .removeHeaders("CamelHttp*")
                     .removeHeader(FEDORA_DS_LABEL)
                     .setHeader(HTTP_URI,
                         simple("{{fedora.url}}/objects/${property[pid]}/datastreams/${property[destination_dsid]}"))
                     .setHeader(HTTP_METHOD).constant("PUT")
-                .endChoice()
+                    .endChoice()
                 .otherwise()
+                    .log(DEBUG, LOGGER, "Didn't receive 200 or 401 (got $headers[CamelHttpResponseCode]}, preparing to POST the datastream.")
                     .removeHeaders("CamelHttp*")
                     .setHeader(HTTP_URI,
                         simple("{{fedora.url}}/objects/${property[pid]}/datastreams/${property[destination_dsid]}"))
@@ -273,19 +346,27 @@ public class WorkerRoutes extends RouteBuilder {
             .end()
             .log(DEBUG, LOGGER, "Uploading file with a ${headers[CamelHttpMethod]}")
             .process(exchange -> {
+                final String baseFileName = exchange.getIn().getHeader(HEADER_FILENAME, String.class);
                 final String dest_dsid = exchange.getProperty("destination_dsid", String.class);
+                final String uploadFileName = baseFileName + "." + outputFileExtensions.get(dest_dsid);
+                exchange.setProperty(HEADER_PROCESS_FILE, uploadFileName);
                 final String outputMime = destinationContentType.get(dest_dsid);
                 if (outputMime == null) {
                     throw new RuntimeCamelException(
                         String.format("Unable to PUT DSID (%s) without content-type mapping", dest_dsid));
                 }
                 exchange.getIn().setHeader(CONTENT_TYPE, outputMime);
-                    final String stream = exchange.getProperty("FileHolder", String.class);
-                    final StringEntity entity = new StringEntity(
-                        stream,
-                        ContentType.create(exchange.getIn().getHeader(CONTENT_TYPE, String.class), Consts.UTF_8));
-                    entity.setContentType(outputMime);
-                    exchange.getIn().setBody(entity);
+                final File uploadFile = new File(temporaryDir + File.separator + uploadFileName);
+                if (!uploadFile.exists() || !uploadFile.canRead()) {
+                        throw new FileNotFoundException(String.format("Cannot find or access file %s", temporaryDir +
+                                "/" + uploadFile));
+                }
+                final FileEntity entity = new FileEntity(
+                    uploadFile,
+                    ContentType.create(outputMime, Consts.UTF_8)
+                );
+                entity.setContentType(outputMime);
+                exchange.getIn().setBody(entity);
             })
             .removeProperty("FileHolder")
             .to("log:ca.umanitoba.dam.islandora.derivatives.worker?level=TRACE&showHeaders=true")
@@ -297,7 +378,10 @@ public class WorkerRoutes extends RouteBuilder {
                 .log(INFO, LOGGER, "Added/Updated dsid ${property[destination_dsid]} on item ${property[pid]}")
             .otherwise()
                 .log(ERROR, LOGGER, "Did not publish dsid ${property[destination_dsid]} on item ${property[pid]}")
-            .end();
+            .end()
+            .setHeader(EXEC_COMMAND_WORKING_DIR).simple("{{temporary.directory}}")
+            .setHeader(EXEC_COMMAND_ARGS).exchangeProperty(HEADER_PROCESS_FILE)
+            .to("exec:rm");
 
     }
 
