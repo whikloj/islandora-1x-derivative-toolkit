@@ -5,6 +5,7 @@ import static org.apache.camel.Exchange.HTTP_METHOD;
 import static org.apache.camel.Exchange.HTTP_RESPONSE_CODE;
 import static org.apache.camel.Exchange.HTTP_URI;
 import static org.apache.camel.Exchange.FILE_NAME;
+import static org.apache.camel.Exchange.CONTENT_LENGTH;
 import static org.apache.camel.LoggingLevel.DEBUG;
 import static org.apache.camel.LoggingLevel.ERROR;
 import static org.apache.camel.LoggingLevel.INFO;
@@ -34,6 +35,7 @@ import org.apache.camel.builder.RouteBuilder;
 import org.apache.http.Consts;
 import org.apache.http.entity.ContentType;
 import org.apache.http.entity.FileEntity;
+import org.apache.http.entity.StringEntity;
 import org.slf4j.Logger;
 
 import com.jayway.jsonpath.DocumentContext;
@@ -361,12 +363,27 @@ public class WorkerRoutes extends RouteBuilder {
                         throw new FileNotFoundException(String.format("Cannot find or access file %s", temporaryDir +
                                 "/" + uploadFile));
                 }
-                final FileEntity entity = new FileEntity(
-                    uploadFile,
-                    ContentType.create(outputMime, Consts.UTF_8)
-                );
-                entity.setContentType(outputMime);
-                exchange.getIn().setBody(entity);
+                final String currentUri = exchange.getIn().getHeader(HTTP_URI, String.class);
+                if (!currentUri.contains("mimeType=")) {
+                    // Set the mimetype
+                    final String newUri = currentUri + "&mimeType=" + outputMime;
+                    exchange.getIn().setHeader(HTTP_URI, newUri);
+                }
+                // Fedora dies if you try to upload a 0 byte datastream file
+                if (uploadFile.length() > 0) {
+                    exchange.getIn().setHeader(CONTENT_LENGTH, uploadFile.length());
+                    final FileEntity entity = new FileEntity(uploadFile,
+                            ContentType.create(outputMime, Consts.UTF_8));
+                    entity.setContentType(outputMime);
+                    exchange.getIn().setBody(entity);
+                } else {
+                    // So upload a one space file.
+                    exchange.getIn().setHeader(CONTENT_LENGTH, 1);
+                    final StringEntity entity = new StringEntity(" ",
+                            ContentType.create(outputMime, Consts.UTF_8));
+                    entity.setContentType(outputMime);
+                    exchange.getIn().setBody(entity);
+                }
             })
             .removeProperty("FileHolder")
             .to("log:ca.umanitoba.dam.islandora.derivatives.worker?level=TRACE&showHeaders=true")

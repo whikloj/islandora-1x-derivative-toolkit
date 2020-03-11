@@ -88,7 +88,7 @@ public class ImageRoutes extends RouteBuilder {
          *
          */
         rest(fullPath)
-            .id("UmlDerivativeGatekeeperRest")
+                .id("UmlDerivativeGatekeeperRest")
             .get("/pid/{pid}")
             .route()
             .routeId("UmlDerivativeGatekeeperInternalQueue")
@@ -102,6 +102,17 @@ public class ImageRoutes extends RouteBuilder {
                 "</entry>"))
             .to("{{input.queue}}")
             .setBody(constant(""));
+
+        rest(fullPath)
+                .get("/direct/{pid}")
+                .route()
+                .setExchangePattern(InOnly)
+                .setBody(simple(
+                        "{ \"pid\": \"${header.pid}\", \"derivatives\" : [{\"source_dsid\":\"OBJ\",\"destination_dsid\":\"OCR\"},{\"source_dsid\":\"OBJ\",\"destination_dsid\":\"HOCR\"}] }"))
+                .removeHeaders("*")
+                .setHeader(CONTENT_TYPE).constant("application/json")
+                .to("{{output.queue}}")
+                .setBody().constant("");
 
 		/**
 		 * Input queue and main route.
