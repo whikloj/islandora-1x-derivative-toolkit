@@ -3,6 +3,7 @@ package ca.umanitoba.dam.islandora.derivatives.worker;
 import static org.apache.camel.Exchange.CONTENT_TYPE;
 import static org.apache.camel.Exchange.HTTP_METHOD;
 import static org.apache.camel.Exchange.HTTP_RESPONSE_CODE;
+import static org.apache.camel.Exchange.HTTP_RESPONSE_TEXT;
 import static org.apache.camel.Exchange.HTTP_URI;
 import static org.apache.camel.Exchange.FILE_NAME;
 import static org.apache.camel.Exchange.CONTENT_LENGTH;
@@ -61,6 +62,12 @@ public class WorkerRoutes extends RouteBuilder {
 
     @PropertyInject("temporary.directory")
     private String temporaryDir;
+
+    @PropertyInject("tesseract.make_binary")
+    private boolean makeBinary;
+
+    @PropertyInject("tesseract.threshold")
+    private String binaryThreshold;
 
     /**
      * Map DSID to content type.
@@ -209,15 +216,16 @@ public class WorkerRoutes extends RouteBuilder {
             .to("exec:{{tesseract.path}}");
 
         /**
-         * Make a Greyscale version of the Tiff without an alpha channel.
+         * Make a Greyscale or binary version of the Tiff without an alpha channel.
          */
+        final String convertArg = (makeBinary ? "-threshold " + binaryThreshold + "%" : "-set colorspace Gray");
         from("direct:makeGreyTiff")
-            .description("Make a greyscale Tiff for Tesseract")
+            .description("Make a greyscale/binary Tiff for Tesseract")
             .log(DEBUG, "Making a Tiff greyscale for ${property[PID]}")
             .setBody(constant(null))
             .setHeader(EXEC_COMMAND_WORKING_DIR).simple("{{temporary.directory}}")
             .setHeader(EXEC_COMMAND_ARGS, simple("${header." + HEADER_FILENAME +
-                        "} -alpha Off -set colorspace Gray ${header." + HEADER_FILENAME + "}_2"))
+                        "} -alpha Off " + convertArg + " ${header." + HEADER_FILENAME + "}_2"))
             .to("exec:{{convert.path}}")
             .choice()
                 .when(header(EXEC_EXIT_VALUE).not().isEqualTo(0))
@@ -365,8 +373,17 @@ public class WorkerRoutes extends RouteBuilder {
                 }
                 final String currentUri = exchange.getIn().getHeader(HTTP_URI, String.class);
                 if (!currentUri.contains("mimeType=")) {
+                    String newUri = currentUri;
+                    if (!newUri.contains("?")) {
+                        // Add a ? if we haven't already
+                        newUri += "?";
+                    }
+                    if (!(newUri.endsWith("?") || newUri.endsWith("&"))) {
+                        // If the URI doesn't end with a ? or & add an &
+                        newUri += "&";
+                    }
                     // Set the mimetype
-                    final String newUri = currentUri + "&mimeType=" + outputMime;
+                    newUri += "mimeType=" + outputMime;
                     exchange.getIn().setHeader(HTTP_URI, newUri);
                 }
                 // Fedora dies if you try to upload a 0 byte datastream file
@@ -388,13 +405,19 @@ public class WorkerRoutes extends RouteBuilder {
             .removeProperty("FileHolder")
             .to("log:ca.umanitoba.dam.islandora.derivatives.worker?level=TRACE&showHeaders=true")
             .to("http4://localhost?authUsername={{fedora.authUsername}}" +
-            "&authPassword={{fedora.authPassword}}&throwExceptionOnFailure=true")
+            "&authPassword={{fedora.authPassword}}&throwExceptionOnFailure=false")
             .to("log:ca.umanitoba.dam.islandora.derivatives.worker?level=TRACE&showHeaders=true")
             .choice()
                 .when(header(HTTP_RESPONSE_CODE).startsWith("20"))
                 .log(INFO, LOGGER, "Added/Updated dsid ${property[destination_dsid]} on item ${property[pid]}")
             .otherwise()
-                .log(ERROR, LOGGER, "Did not publish dsid ${property[destination_dsid]} on item ${property[pid]}")
+                .process(exchange -> {
+                    final String errorMessage = exchange.getIn().getHeader(HTTP_RESPONSE_TEXT, String.class);
+                    final String errorCode = exchange.getIn().getHeader(HTTP_RESPONSE_CODE, String.class);
+                    final String message = String.format("Unable to publish dsid %s on item %s : %s - %s",
+                            exchange.getProperty("destination_dsid"), exchange.getProperty("pid"), errorCode, errorMessage);
+                    LOGGER.error(message);
+                })
             .end()
             .setHeader(EXEC_COMMAND_WORKING_DIR).simple("{{temporary.directory}}")
             .setHeader(EXEC_COMMAND_ARGS).exchangeProperty(HEADER_PROCESS_FILE)
