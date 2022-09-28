@@ -1,0 +1,13 @@
+{
+	"pid": "islandora:1234",
+	"derivatives" : [
+		{
+			"source_dsid" : "OBJ",
+			"destination_dsid" : "HOCR"
+		},
+		{
+			"source_dsid" : "OBJ",
+			"destination_dsid" : "TN"
+		}
+	]
+}
