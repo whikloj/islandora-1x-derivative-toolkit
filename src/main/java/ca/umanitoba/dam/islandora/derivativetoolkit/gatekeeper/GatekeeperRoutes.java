@@ -64,6 +64,7 @@ public class GatekeeperRoutes extends RouteBuilder {
 
     @Override
     public void configure() throws Exception {
+        LOGGER.info("Gatekeeper Routes Enabled");
 
         final String fullPath = (!restPath.startsWith("/") ? "/" : "") + restPath + "/process";
         onException(Exception.class)

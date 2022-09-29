@@ -3,23 +3,27 @@
 <configuration>
     <appender name="STDOUT" class="ch.qos.logback.core.ConsoleAppender">
         <encoder>
-            <pattern>%p %d{HH:mm:ss.SSS} [%thread] \(%c{0}\) %m%n</pattern>
+            <pattern>%p %d{ISO8601} [%thread] \(%c{0}\) %m%n</pattern>
         </encoder>
     </appender>
 
-    <logger name="ca.umanitoba.dam.islandora.derivativetoolkit.gatekeeper" additivity="false" level="${toolkit.gatekeeper.log:-INFO}">
+
+    <logger name="ca.umanitoba.dam.islandora.derivativetoolkit" additivity="false" level="${toolkit.log.all:-INFO}">
         <appender-ref ref="STDOUT"/>
     </logger>
-    <logger name="ca.umanitoba.dam.islandora.derivativetoolkit.worker" additivity="false" level="${toolkit.worker.log:-INFO}">
+    <logger name="ca.umanitoba.dam.islandora.derivativetoolkit.gatekeeper" additivity="false" level="${toolkit.log.gatekeeper:-INHERITED}">
         <appender-ref ref="STDOUT"/>
     </logger>
-    <logger name="ca.umanitoba.dam.islandora.derivativetoolkit.queuesplitter" additivity="false" level="${toolkit.queuesplitter.log:-INFO}">
+    <logger name="ca.umanitoba.dam.islandora.derivativetoolkit.worker" additivity="false" level="${toolkit.log.worker:-INHERITED}">
         <appender-ref ref="STDOUT"/>
     </logger>
-    <logger name="com.apache.camel" additivity="false" level="${toolkit.log.camel:-INFO}">
+    <logger name="ca.umanitoba.dam.islandora.derivativetoolkit.queuesplitter" additivity="false" level="${toolkit.log.queuesplitter:-INHERITED}">
         <appender-ref ref="STDOUT"/>
     </logger>
-    <logger name="com.apache.activemq" additivity="false" level="${toolkit.log.activemq:-INFO}">
+    <logger name="com.apache.camel" additivity="false" level="${toolkit.log.camel:-WARN}">
+        <appender-ref ref="STDOUT"/>
+    </logger>
+    <logger name="com.apache.activemq" additivity="false" level="${toolkit.log.activemq:-WARN}">
         <appender-ref ref="STDOUT"/>
     </logger>
 

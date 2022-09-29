@@ -83,6 +83,8 @@ public class WorkerRoutes extends RouteBuilder {
 
     @Override
     public void configure() throws Exception {
+        LOGGER.info("Worker Routes Enabled");
+
         destinationContentType.put("OCR", "text/plain");
         destinationContentType.put("HOCR", "application/xml");
 

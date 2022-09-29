@@ -20,7 +20,7 @@ public class QueueSplitterProps {
         return new RouteBuilder() {
             @Override
             public void configure() throws Exception {
-                LOGGER.warn("QueueSplitter Routes Enabled");
+                LOGGER.info("QueueSplitter Routes Enabled");
                 from("{{queuesplitter.input_queue}}")
                         .routeId("UmlDerivativeQueueSplitter")
                         .description("Takes a message off input and multicasts to all in the recipient list.")

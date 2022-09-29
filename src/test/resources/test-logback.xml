@@ -7,7 +7,16 @@
         </encoder>
     </appender>
 
-    <logger name="ca.umanitoba.dam.islandora.derivativetoolkit" additivity="false" level="${toolkit.gatekeeper.log:-INFO}">
+    <logger name="ca.umanitoba.dam.islandora.derivativetoolkit" additivity="false" level="${toolkit.log.all:-DEBUG}">
+        <appender-ref ref="STDOUT"/>
+    </logger>
+    <logger name="ca.umanitoba.dam.islandora.derivativetoolkit.gatekeeper" additivity="false" level="${toolkit.log.gatekeeper:-INHERITED}">
+        <appender-ref ref="STDOUT"/>
+    </logger>
+    <logger name="ca.umanitoba.dam.islandora.derivativetoolkit.worker" additivity="false" level="${toolkit.log.worker:-INHERITED}">
+        <appender-ref ref="STDOUT"/>
+    </logger>
+    <logger name="ca.umanitoba.dam.islandora.derivativetoolkit.queuesplitter" additivity="false" level="${toolkit.log.queuesplitter:-INHERITED}">
         <appender-ref ref="STDOUT"/>
     </logger>
     <logger name="com.apache.camel" additivity="false" level="${toolkit.log.camel:-INFO}">

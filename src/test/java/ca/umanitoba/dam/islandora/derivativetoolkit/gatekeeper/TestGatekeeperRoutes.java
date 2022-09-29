@@ -1,14 +1,11 @@
 package ca.umanitoba.dam.islandora.derivativetoolkit.gatekeeper;
 
 import static java.nio.charset.StandardCharsets.UTF_8;
-import static org.apache.camel.test.AvailablePortFinder.getNextAvailable;
 import static org.apache.camel.util.ObjectHelper.loadResourceAsStream;
-import static org.junit.jupiter.api.Assertions.fail;
 import static org.slf4j.LoggerFactory.getLogger;
 
 import java.util.Arrays;
 import java.util.List;
-import java.util.Properties;
 
 import org.apache.camel.CamelContext;
 import org.apache.camel.Produce;
@@ -25,7 +22,7 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.annotation.DirtiesContext;
 
 @CamelSpringBootTest
-@SpringBootTest(properties = {"gatekeeper.enabled=true", "jms.prefetchSize=0", "fedora.authUsername=",
+@SpringBootTest(properties = {"gatekeeper.enabled=true", "fedora.authUsername=",
         "fedora.authPassword=", "fedora.url=http://localhost:8080/fedora",
         "error.maxRedeliveries=1", "gatekeeper.process_dsids=OCR,HOCR",
         "gatekeeper.process_contentTypes=islandora:sp_large_image_cmodel",
