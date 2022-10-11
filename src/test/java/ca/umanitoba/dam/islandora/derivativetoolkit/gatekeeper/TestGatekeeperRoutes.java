@@ -67,11 +67,8 @@ public class TestGatekeeperRoutes {
 
         context.start();
 
-        final var mockGetObjectInfo = context.getEndpoint("mock:direct:getObjectInfo",
-                MockEndpoint.class);
-        final var mockFormatOutput = context.getEndpoint("mock:direct:formatOutput", MockEndpoint.class);
-        mockGetObjectInfo.expectedMessageCount(3);
-        mockFormatOutput.expectedMessageCount(1);
+        ((MockEndpoint)context.getEndpoint("mock:direct:getObjectInfo")).expectedMessageCount(3);
+        ((MockEndpoint)context.getEndpoint("mock:direct:formatOutput")).expectedMessageCount(1);
 
         template.sendBodyAndHeader(hasOcr, "methodName", "ingest");
         template.sendBodyAndHeader(noMatchingDsid, "methodName", "ingest");
@@ -96,8 +93,7 @@ public class TestGatekeeperRoutes {
                         "gatekeeper/rest_responses/format_output_output.json"), UTF_8);
         final List<String> expectedList = Arrays.asList(expectedJson);
 
-        final var mockDirectEnd = (MockEndpoint) context.getEndpoint("mock:direct:end");
-        mockDirectEnd.expectedBodiesReceived(expectedList);
+        ((MockEndpoint) context.getEndpoint("mock:direct:end")).expectedBodiesReceived(expectedList);
 
         template.sendBody("direct:formatOutput", bodyJson);
 

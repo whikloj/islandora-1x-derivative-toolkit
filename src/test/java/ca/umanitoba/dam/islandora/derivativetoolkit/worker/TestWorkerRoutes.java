@@ -5,7 +5,6 @@ import static org.apache.camel.util.ObjectHelper.loadResourceAsStream;
 import static org.slf4j.LoggerFactory.getLogger;
 
 import org.apache.camel.CamelContext;
-import org.apache.camel.EndpointInject;
 import org.apache.camel.Produce;
 import org.apache.camel.ProducerTemplate;
 import org.apache.camel.builder.AdviceWith;
@@ -26,13 +25,10 @@ import org.springframework.test.annotation.DirtiesContext;
         "worker.input.queue=direct:start", "error.maxRedeliveries=1",
         "camel.component.activemq.autoStartup=false"})
 @UseAdviceWith
-@DirtiesContext(classMode = DirtiesContext.ClassMode.BEFORE_EACH_TEST_METHOD)
+@DirtiesContext(classMode = DirtiesContext.ClassMode.AFTER_EACH_TEST_METHOD)
 public class TestWorkerRoutes {
 
     private static Logger LOGGER = getLogger(TestWorkerRoutes.class);
-
-    @EndpointInject(value = "mock:result")
-    protected MockEndpoint resultEndpoint;
 
     @Produce(value = "direct:start")
     protected ProducerTemplate template;
@@ -55,18 +51,13 @@ public class TestWorkerRoutes {
 
         final String bodyJson = IOUtils.toString(loadResourceAsStream("worker/test_hocr_ocr_input.json"), UTF_8);
 
-        final MockEndpoint generateOCR = (MockEndpoint) context.getEndpoint("mock:direct:generateOCR");
-        generateOCR.expectedMessageCount(0);
-        final MockEndpoint generateHOCR = (MockEndpoint) context.getEndpoint("mock:direct:generateHOCR");
-        generateHOCR.expectedMessageCount(0);
-        final MockEndpoint generateBoth = (MockEndpoint) context.getEndpoint("mock:direct:generateBoth");
-        generateBoth.expectedMessageCount(1);
+        ((MockEndpoint) context.getEndpoint("mock:direct:generateOCR")).expectedMessageCount(0);
+        ((MockEndpoint) context.getEndpoint("mock:direct:generateHOCR")).expectedMessageCount(0);
+        ((MockEndpoint) context.getEndpoint("mock:direct:generateBoth")).expectedMessageCount(1);
 
         template.sendBody(bodyJson);
 
-        generateOCR.assertIsSatisfied();
-        generateHOCR.assertIsSatisfied();
-        generateBoth.assertIsSatisfied();
+        MockEndpoint.assertIsSatisfied(context);
     }
 
     @Test
@@ -85,18 +76,13 @@ public class TestWorkerRoutes {
 
         final String bodyJson = IOUtils.toString(loadResourceAsStream("worker/test_hocr_input.json"), UTF_8);
 
-        final MockEndpoint generateOCR = (MockEndpoint) context.getEndpoint("mock:direct:generateOCR");
-        generateOCR.expectedMessageCount(0);
-        final MockEndpoint generateHOCR = (MockEndpoint) context.getEndpoint("mock:direct:generateHOCR");
-        generateHOCR.expectedMessageCount(1);
-        final MockEndpoint generateBoth = (MockEndpoint) context.getEndpoint("mock:direct:generateBoth");
-        generateBoth.expectedMessageCount(0);
+        ((MockEndpoint) context.getEndpoint("mock:direct:generateOCR")).expectedMessageCount(0);
+        ((MockEndpoint) context.getEndpoint("mock:direct:generateHOCR")).expectedMessageCount(1);
+        ((MockEndpoint) context.getEndpoint("mock:direct:generateBoth")).expectedMessageCount(0);
 
         template.sendBody(bodyJson);
 
-        generateOCR.assertIsSatisfied();
-        generateHOCR.assertIsSatisfied();
-        generateBoth.assertIsSatisfied();
+        MockEndpoint.assertIsSatisfied(context);
     }
 
     @Test
@@ -115,17 +101,12 @@ public class TestWorkerRoutes {
 
         final String bodyJson = IOUtils.toString(loadResourceAsStream("worker/test_TN_input.json"), UTF_8);
 
-        final MockEndpoint generateOCR = (MockEndpoint) context.getEndpoint("mock:direct:generateOCR");
-        generateOCR.expectedMessageCount(0);
-        final MockEndpoint generateHOCR = (MockEndpoint) context.getEndpoint("mock:direct:generateHOCR");
-        generateHOCR.expectedMessageCount(0);
-        final MockEndpoint generateBoth = (MockEndpoint) context.getEndpoint("mock:direct:generateBoth");
-        generateBoth.expectedMessageCount(0);
+        ((MockEndpoint) context.getEndpoint("mock:direct:generateOCR")).expectedMessageCount(0);
+        ((MockEndpoint) context.getEndpoint("mock:direct:generateHOCR")).expectedMessageCount(0);
+        ((MockEndpoint) context.getEndpoint("mock:direct:generateBoth")).expectedMessageCount(0);
 
         template.sendBody(bodyJson);
 
-        generateOCR.assertIsSatisfied();
-        generateHOCR.assertIsSatisfied();
-        generateBoth.assertIsSatisfied();
+        MockEndpoint.assertIsSatisfied(context);
     }
 }

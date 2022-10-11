@@ -9,6 +9,7 @@ import static org.apache.camel.Exchange.HTTP_URI;
 import static org.apache.camel.LoggingLevel.DEBUG;
 import static org.apache.camel.LoggingLevel.ERROR;
 import static org.apache.camel.LoggingLevel.INFO;
+import static org.apache.camel.LoggingLevel.TRACE;
 import static org.apache.camel.LoggingLevel.WARN;
 import static org.apache.camel.builder.PredicateBuilder.and;
 import static org.apache.camel.component.exec.ExecBinding.EXEC_COMMAND_ARGS;
@@ -87,7 +88,6 @@ public class WorkerRoutes extends RouteBuilder {
 
         destinationContentType.put("OCR", "text/plain");
         destinationContentType.put("HOCR", "application/xml");
-
         outputFileExtensions.put("OCR", "txt");
         outputFileExtensions.put("HOCR", "hocr");
 
@@ -117,14 +117,14 @@ public class WorkerRoutes extends RouteBuilder {
                     final DocumentContext ctx = JsonPath.parse(json);
 
                     final String[] dsids = ctx.read("$.derivatives[*].destination_dsid", String[].class);
-                    final Set<String> destinations = Stream.of(dsids).peek(t -> LOGGER.debug("Peek {}", t))
-                            .map(String::valueOf).collect(Collectors.toSet());
-                    LOGGER.debug("ContentType {}", destinationContentType);
+                    final Set<String> destinations = Stream.of(dsids).map(String::trim)
+                            .peek(t -> LOGGER.debug("Peek ({})", t)).collect(Collectors.toSet());
+                    LOGGER.trace("ContentType {}", destinationContentType);
                     final Set<String> HocrAndOcr = destinationContentType.keySet();
-                    LOGGER.debug("destinations {}", destinations);
-                    LOGGER.debug("HocrAndOcr {}", HocrAndOcr);
+                    LOGGER.trace("destinations {}", destinations);
+                    LOGGER.trace("HocrAndOcr {}", HocrAndOcr);
                     HocrAndOcr.retainAll(destinations);
-                    LOGGER.debug("returning {}", HocrAndOcr);
+                    LOGGER.trace("returning {}", HocrAndOcr);
                     return (HocrAndOcr.size() == 2);
                 }).to("direct:generateBoth").endChoice()
                 .otherwise()
@@ -225,7 +225,7 @@ public class WorkerRoutes extends RouteBuilder {
                 .description("Make a greyscale Tiff for Tesseract")
                 .log(DEBUG, "Making a Tiff greyscale for ${exchangeProperty[PID]}")
                 .setBody(simple("null"))
-                .log(DEBUG, LOGGER, "body is (${body})")
+                .log(TRACE, LOGGER, "body is (${body})")
                 .setHeader(EXEC_COMMAND_WORKING_DIR).simple("{{worker.temporary.directory}}")
                 .setHeader(EXEC_COMMAND_ARGS, simple("${header." + HEADER_FILENAME +
                         "} -alpha Off -set colorspace Gray ${header." + HEADER_FILENAME + "}_2"))

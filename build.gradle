@@ -49,6 +49,7 @@ dependencies {
 	testRuntimeOnly "org.apache.activemq:apache-activemq:5.16.1"
 
 	runtimeOnly "ch.qos.logback:logback-classic:${versions.logback}"
+	runtimeOnly "com.jayway.jsonpath:json-path:2.7.0"
 }
 
 gradle.projectsEvaluated {
@@ -92,9 +93,11 @@ jar {
 		)
 	}
 }
-
 test {
 	useJUnitPlatform()
 	// To display normal application output during tests.
-	// testLogging.showStandardStreams = true
+	//testLogging.showStandardStreams = true
+	// To change testing log level
+	//jvmArgs = ['-Dtoolkit.log.all=TRACE']
 }
+
