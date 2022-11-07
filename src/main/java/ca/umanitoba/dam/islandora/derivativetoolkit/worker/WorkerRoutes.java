@@ -278,11 +278,13 @@ public class WorkerRoutes extends RouteBuilder {
                 .log(INFO, LOGGER, "Image Processing ${headers[CamelHttpUri]}")
                 .to("direct:doDownload")
                 .otherwise()
-                .log(WARN, LOGGER, "Cannot process an item with Content-Type ${header[Content-Type]}")
+                .log(WARN, LOGGER, "Cannot process the DSID ${exchangeProperty[source_dsid]} on item " +
+                        "${exchangeProperty[pid]} with Content-Type ${header[Content-Type]}")
                 .throwException(
                         new RuntimeCamelException(
-                                String.format("Cannot deal with a non-image on item %s DSID %s", exchangeProperty("pid"),
-                                        exchangeProperty("destination_dsid"))
+                                String.format("Cannot deal with a non-image on item %s DSID %s", exchangeProperty(
+                                        "pid").toString(),
+                                        exchangeProperty("destination_dsid").toString())
                         )
                 )
                 .end();
@@ -377,7 +379,8 @@ public class WorkerRoutes extends RouteBuilder {
                     final String currentUri = exchange.getIn().getHeader(HTTP_URI, String.class);
                     if (!currentUri.contains("mimeType=")) {
                         // Set the mimetype
-                        final String newUri = currentUri + "&mimeType=" + outputMime;
+                        final String newUri =
+                                currentUri + (currentUri.contains("?") ? "&" : "?") + "mimeType=" + outputMime;
                         exchange.getIn().setHeader(HTTP_URI, newUri);
                     }
                     // Fedora dies if you try to upload a 0 byte datastream file
